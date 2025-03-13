@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #############################################################################
 # Classes related to the CyTrONE training client operation
@@ -6,7 +6,8 @@
 
 # External imports
 import sys
-import urllib
+import urllib.request
+import urllib.parse
 import ssl
 import logging
 #logging.basicConfig(level=logging.DEBUG, format='* %(levelname)s: %(filename)s: %(message)s')
@@ -74,7 +75,7 @@ try:
             logging.info("Use cyber range description from file {0}.".format(SAMPLE_INSTANTIATE_RANGE))
             
             description_parameters = {query.Parameters.DESCRIPTION_FILE: instantiate_content}
-            description_parameters = urllib.urlencode(description_parameters)
+            description_parameters = urllib.parse.urlencode(description_parameters)
             POST_parameters += ("&" + description_parameters)
         except IOError:
             logging.error("Cannot read from file {0}.".format(SAMPLE_INSTANTIATE_RANGE))
@@ -92,9 +93,9 @@ try:
             # but we need them since we only provide a self-signed certificate with the source code
             ssl_context.check_hostname = False # NOTE: Comment out or set to 'True'
             ssl_context.verify_mode = ssl.CERT_NONE # NOTE: Comment out or set to 'ssl.CERT_REQUIRED'
-            data_stream = urllib.urlopen(server_url, POST_parameters, context=ssl_context)
+            data_stream = urllib.request.urlopen(server_url, POST_parameters.encode('utf-8'), context=ssl_context)
         else:
-            data_stream = urllib.urlopen(server_url, POST_parameters)
+            data_stream = urllib.request.urlopen(server_url, POST_parameters.encode('utf-8'))
     else:
         logging.error("No POST parameters provided => abort")
         sys.exit(1)
@@ -102,7 +103,7 @@ try:
     data = data_stream.read()
 
     # Show server response
-    logging.debug("Server response: " + data)
+    logging.debug("Server response: " + data.decode('utf-8'))
 
     (status, message) = query.Response.parse_server_response(data)
 
@@ -119,9 +120,9 @@ try:
                 training_info.pretty_print()
         else:
             logging.error("Showing returned error message...")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
             
     elif action == query.Parameters.CREATE_TRAINING:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
@@ -129,10 +130,10 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing training session creation information... ")
-            print SEPARATOR
+            print (SEPARATOR)
             # We use rstrip() to remove trailing end of line etc.
-            print urllib.unquote(message).rstrip()
-            print SEPARATOR
+            print (urllib.parse.unquote(message).rstrip())
+            print (SEPARATOR)
 
     elif action == query.Parameters.CREATE_TRAINING_Variation:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
@@ -140,10 +141,10 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing training session creation information... ")
-            print SEPARATOR
+            print (SEPARATOR)
             # We use rstrip() to remove trailing end of line etc.
-            print urllib.unquote(message).rstrip()
-            print SEPARATOR
+            print (urllib.parse.unquote(message).rstrip())
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CONFIGURATIONS:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
@@ -156,9 +157,9 @@ try:
                 session_info.pretty_print()
         else:
             logging.error("Showing returned error message...")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
  
     elif action == query.Parameters.GET_SESSIONS:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
@@ -171,9 +172,9 @@ try:
                 session_info.pretty_print()
         else:
             logging.error("Showing returned error message...")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.END_TRAINING:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
@@ -181,18 +182,18 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing training session termination information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
     elif action == query.Parameters.END_TRAINING_Variation:
         logging.info("Training server action '{0}' done => {1}.".format(action, status))
 
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing training session termination information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_NOTIFICATION:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -200,9 +201,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range notification information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_DETAILS:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -210,9 +211,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range details information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_ENTRY_POINT:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -220,9 +221,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range entry_point information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_CREATION_STATUS:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -230,9 +231,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range entry_point information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_INITIF:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -240,9 +241,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range initif information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.GET_CR_CREATION_LOG:
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -250,9 +251,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range creation_log information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     # Handle instantiation server actions
     elif action == query.Parameters.INSTANTIATE_RANGE:        
@@ -261,9 +262,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range instantiation information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.DESTROY_RANGE:        
         logging.info("Instantiation server action '{0}' done => {1}.".format(action, status))
@@ -271,9 +272,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing cyber range destruction information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     # Handle content server actions
     elif action == query.Parameters.UPLOAD_CONTENT:        
@@ -282,9 +283,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing LMS content upload information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     elif action == query.Parameters.REMOVE_CONTENT:        
         logging.info("Content server action '{0}' done Status: {1}.".format(action, status))
@@ -292,9 +293,9 @@ try:
         # Display message if any (including in case of error)
         if message:
             logging.info("Showing LMS content removal information... ")
-            print SEPARATOR
-            print message
-            print SEPARATOR
+            print (SEPARATOR)
+            print (message)
+            print (SEPARATOR)
 
     # Handle unknown actions
     else:

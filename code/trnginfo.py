@@ -159,12 +159,12 @@ class TrainingInfo:
         try:
             yaml_file = open(yaml_file_name, "r")
         except IOError:
-            print "ERROR: Cannot open file %s." % (yaml_file_name)
+            print ("ERROR: Cannot open file %s." % (yaml_file_name))
             return False
         
         try:
             # Load the YAML information
-            info = yaml.load(yaml_file)
+            info = yaml.load(yaml_file, Loader=yaml.SafeLoader)
 
             # Close the file
             yaml_file.close()
@@ -175,8 +175,8 @@ class TrainingInfo:
         except yaml.YAMLError as exc:
             if hasattr(exc, 'problem_mark'):
                 mark = exc.problem_mark
-                print "ERROR: YAML error in file %s at position: (%s:%s)." % (
-                    yaml_file_name, mark.line+1, mark.column+1)
+                print ("ERROR: YAML error in file %s at position: (%s:%s)." % (
+                    yaml_file_name, mark.line+1, mark.column+1))
 
             return False
 
@@ -192,7 +192,7 @@ class TrainingInfo:
             return self.parse_info(data)
 
         except ValueError as error:
-            print "ERROR: %s." % (error)
+            print ("ERROR: %s." % (error))
             return False
 
 
@@ -214,11 +214,11 @@ class TrainingInfo:
         assert types_info!=None
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "PARSE INFO: %d type(s)" % (
-                len(types_info))
-            print types_info
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("PARSE INFO: %d type(s)" % (
+                len(types_info)))
+            print (types_info)
+            print (SEPARATOR)
 
         # Get data for each training type
         for type_info in types_info:
@@ -227,10 +227,10 @@ class TrainingInfo:
             self.types.append(type)
 
             if DO_DEBUG:
-                print "TYPE:\n%s" % (type)
+                print ("TYPE:\n%s" % (type))
 
         if DO_DEBUG:
-            print SEPARATOR
+            print (SEPARATOR)
 
         
         # Get data for all scenarios from info
@@ -241,11 +241,11 @@ class TrainingInfo:
         assert scenarios_info!=None
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "PARSE INFO: %d scenario(s)" % (
-                len(scenarios_info))
-            print scenarios_info
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("PARSE INFO: %d scenario(s)" % (
+                len(scenarios_info)))
+            print (scenarios_info)
+            print (SEPARATOR)
 
         # Get data for each scenario
         for scenario_info in scenarios_info:
@@ -254,31 +254,31 @@ class TrainingInfo:
             self.scenarios.append(scenario)
 
             if DO_DEBUG:
-                print "SCENARIO:\n%s" % (scenario)
+                print ("SCENARIO:\n%s" % (scenario))
 
         if DO_DEBUG:
-            print SEPARATOR
+            print (SEPARATOR)
 
         return True
     
 
     # Pretty-print info about the scenarios
     def pretty_print(self):
-        print SEPARATOR
-        print "TRAINING INFO: %d type(s)  %d scenario(s)" % (
-            len(self.types), len(self.scenarios))
-        print SEPARATOR
+        print (SEPARATOR)
+        print ("TRAINING INFO: %d type(s)  %d scenario(s)" % (
+            len(self.types), len(self.scenarios)))
+        print (SEPARATOR)
         index = 1;
         for type in self.types:
-            print "TYPE #%d:" % (index)
-            print type.__str__()
+            print ("TYPE #%d:" % (index))
+            print (type.__str__())
             index += 1
         index = 1;
         for scenario in self.scenarios:
-            print "SCENARIO #%d:" % (index)
-            print scenario.__str__()
+            print ("SCENARIO #%d:" % (index))
+            print (scenario.__str__())
             index += 1
-        print SEPARATOR
+        print (SEPARATOR)
 
 
     # Create an external JSON representation that includes only
@@ -311,31 +311,15 @@ class TrainingInfo:
     # scenario and level provided as arguments
     def get_content_file_name(self, scenario_name, level_name):
 
-        scenario_name_utf = unicode(scenario_name, 'utf-8') # convert to UTF-8
-        level_name_utf = unicode(level_name, 'utf-8') # convert to UTF-8
         
         content_file = None
-        #print "DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
+        #print ("DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
 
         for scenario in self.scenarios:
             
-            if type(scenario.name) == types.UnicodeType:
-                # Printing Unicode doesn't work on development servers,
-                # so I commented out the debug message
-                #print "DEBUG: scenario name=%s (type=%s)" % (scenario.name, type(scenario.name))
-                scenario_name_cmp = scenario_name_utf
-            else:
-                scenario_name_cmp = scenario_name
-            if scenario.name == scenario_name_cmp:
+            if scenario.name == scenario_name:
                 for level in scenario.levels:
-                    if type(level.name) == types.UnicodeType:
-                        # Printing Unicode doesn't work on development servers,
-                        # so I commented out the debug message
-                        #print "DEBUG: level name=%s (type=%s)" % (level.name, type(level.name))
-                        level_name_cmp = level_name_utf
-                    else:
-                        level_name_cmp = level_name
-                    if level.name == level_name_cmp:
+                    if level.name == level_name:
                         content_file = level.content_file
 
         return content_file
@@ -344,31 +328,15 @@ class TrainingInfo:
     # scenario and level provided as arguments
     def get_range_file_name(self, scenario_name, level_name):
 
-        scenario_name_utf = unicode(scenario_name, 'utf-8') # convert to UTF-8
-        level_name_utf = unicode(level_name, 'utf-8') # convert to UTF-8
         
         range_file = None
-        #print "DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
+        #print ("DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
 
         for scenario in self.scenarios:
-            
-            if type(scenario.name) == types.UnicodeType:
-                # Printing Unicode doesn't work on development servers,
-                # so I commented out the debug message
-                #print "DEBUG: scenario name=%s (type=%s)" % (scenario.name, type(scenario.name))
-                scenario_name_cmp = scenario_name_utf
-            else:
-                scenario_name_cmp = scenario_name
-            if scenario.name == scenario_name_cmp:
+
+            if scenario.name == scenario_name:
                 for level in scenario.levels:
-                    if type(level.name) == types.UnicodeType:
-                        # Printing Unicode doesn't work on development servers,
-                        # so I commented out the debug message
-                        #print "DEBUG: level name=%s (type=%s)" % (level.name, type(level.name))
-                        level_name_cmp = level_name_utf
-                    else:
-                        level_name_cmp = level_name
-                    if level.name == level_name_cmp:
+                    if level.name == level_name:
                         range_file = level.range_file
 
         return range_file
@@ -377,30 +345,14 @@ class TrainingInfo:
     # for the scenario and level provided as arguments
     def get_progression_scenario_name(self, scenario_name, level_name):
 
-        scenario_name_utf = unicode(scenario_name, 'utf-8') # convert to UTF-8
-        level_name_utf = unicode(level_name, 'utf-8') # convert to UTF-8
 
         progression_scenario = None
 
         for scenario in self.scenarios:
-
-            if type(scenario.name) == types.UnicodeType:
-                # Printing Unicode doesn't work on development servers,
-                # so I commented out the debug message
-                #print "DEBUG: scenario name=%s (type=%s)" % (scenario.name, type(scenario.name))
-                scenario_name_cmp = scenario_name_utf
-            else:
-                scenario_name_cmp = scenario_name
-            if scenario.name == scenario_name_cmp:
+            
+            if scenario.name == scenario_name:
                 for level in scenario.levels:
-                    if type(level.name) == types.UnicodeType:
-                        # Printing Unicode doesn't work on development servers,
-                        # so I commented out the debug message
-                        #print "DEBUG: level name=%s (type=%s)" % (level.name, type(level.name))
-                        level_name_cmp = level_name_utf
-                    else:
-                        level_name_cmp = level_name
-                    if level.name == level_name_cmp:
+                    if level.name == level_name:
                         progression_scenario = level.progression_scenario
 
         return progression_scenario
@@ -421,39 +373,39 @@ if __name__ == '__main__':
         # TEST #1
         if enabled[0]:
             TEST_FILE = DATABASE_DIR + "training-en.yml"
-            print SEPARATO2
-            print "TEST #1: Get training information from YAML file: %s." % (
-                TEST_FILE)
-            print SEPARATO2
+            print (SEPARATO2)
+            print ("TEST #1: Get training information from YAML file: %s." % (
+                TEST_FILE))
+            print (SEPARATO2)
             training_info = TrainingInfo()
             training_info.parse_YAML_file(TEST_FILE)
             training_info.pretty_print()
-            print "External JSON representation: %s" % (training_info.get_JSON_representation())
+            print ("External JSON representation: %s" % (training_info.get_JSON_representation()))
 
         #####################################################################
         # TEST #2
         if enabled[1]:
             TEST_FILE = DATABASE_DIR + "training-ja.yml"
-            print SEPARATO2
-            print "TEST #2: Get training information from YAML file: %s." % (
-                TEST_FILE)
-            print SEPARATO2
+            print (SEPARATO2)
+            print ("TEST #2: Get training information from YAML file: %s." % (
+                TEST_FILE))
+            print (SEPARATO2)
             training_info = TrainingInfo()
             training_info.parse_YAML_file(TEST_FILE)
             training_info.pretty_print()
-            print "External JSON representation: %s" % (training_info.get_JSON_representation())
+            print ("External JSON representation: %s" % (training_info.get_JSON_representation()))
 
         #####################################################################
         # TEST #3
         if enabled[2]:
             TEST_STRING = '[{"scenarios": [{"levels": [{"range": "NIST-level1.yml", "name": "Level 1 (Easy)"}, {"range": "NIST-level2.yml", "name": "Level 2 (Medium)"}, {"range": "NIST-level3.yml", "name": "Level 3 (Hard)"}], "name": "NIST Information Security Testing and Assessment"}, {"levels": [{"range": "IR-level1.yml", "name": "Level 1 (Detection)"}, {"range": "IR-level2.yml", "name": "Level 2 (Forensics)"}, {"range": "IR-level3.yml", "name": "Level 3 (Response)"}], "name": "Incident Response"}]}]'
-            print SEPARATO2
-            print "TEST #3: Get training information from JSON string: %s." % (
-                TEST_STRING)
-            print SEPARATO2
+            print (SEPARATO2)
+            print ("TEST #3: Get training information from JSON string: %s." % (
+                TEST_STRING))
+            print (SEPARATO2)
             training_info = TrainingInfo()
             training_info.parse_JSON_data(TEST_STRING)
             training_info.pretty_print()
     
     except IOError as error:
-        print "ERROR: %s." % (error)
+        print ("ERROR: %s." % (error))

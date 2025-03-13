@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #############################################################################
 # Classes related to the CyTrONE password management

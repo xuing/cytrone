@@ -95,7 +95,7 @@ class User:
 
         for variable in self.DEFINED_VARIABLES:
             if DO_DEBUG:
-                print "* DEBUG: userinfo: %s -> %s" % (variable, user_info.get(variable, None))
+                print ("* DEBUG: userinfo: %s -> %s" % (variable, user_info.get(variable, None)))
             # Make sure to convert to string in order to avoid having
             # a value such as 10.1 be treated as a float
             setattr(self, variable, user_info.get(variable, None).__str__())
@@ -107,7 +107,7 @@ class User:
             #    setattr(self, Keys.CLONE_MGMT_NETWORK, clone_mgmt_addr)
         
         if DO_DEBUG:
-            print "* DEBUG: userinfo: USER:  NAME=%s  ID=%s" % (self.name, self.id)
+            print ("* DEBUG: userinfo: USER:  NAME=%s  ID=%s" % (self.name, self.id))
 
 
     # Create a string representation of the user
@@ -143,7 +143,7 @@ class User:
             variable_value = getattr(self, variable)
 
             if DO_DEBUG:
-                print "* DEBUG: userinfo: name=%s value=%s" % (variable_name, variable_value)
+                print ("* DEBUG: userinfo: name=%s value=%s" % (variable_name, variable_value))
 
             return_string = return_string.replace(variable_name, variable_value)
 
@@ -180,12 +180,12 @@ class UserInfo:
         try:
             yaml_file = open(yaml_file_name, "r")
         except IOError:
-            print "* ERROR: userinfo: Cannot open file %s." % (yaml_file_name)
+            print ("* ERROR: userinfo: Cannot open file %s." % (yaml_file_name))
             return False
             
         try:
             # Load the YAML information
-            info = yaml.load(yaml_file)
+            info = yaml.load(yaml_file, Loader=yaml.SafeLoader)
 
             # Close the file
             yaml_file.close()
@@ -194,15 +194,15 @@ class UserInfo:
             result = self.parse_info(info)
 
             if DO_DEBUG:
-                print result
+                print (result)
 
             return True
 
         except yaml.YAMLError as exc:
             if hasattr(exc, 'problem_mark'):
                 mark = exc.problem_mark
-                print "* ERROR: userinfo: YAML error in file %s at position: (%s:%s)." % (
-                    yaml_file_name, mark.line+1, mark.column+1)
+                print ("* ERROR: userinfo: YAML error in file %s at position: (%s:%s)." % (
+                    yaml_file_name, mark.line+1, mark.column+1))
             return False
 
 
@@ -220,11 +220,11 @@ class UserInfo:
         assert users_info != None
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "* DEBUG: userinfo: PARSE INFO: %d users(s)" % (
-                len(users_info))
-            print users_info
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("* DEBUG: userinfo: PARSE INFO: %d users(s)" % (
+                len(users_info)))
+            print (users_info)
+            print (SEPARATOR)
 
         # Get data for each user
         for user_info in users_info:
@@ -233,10 +233,10 @@ class UserInfo:
             self.users.append(user)
 
             if DO_DEBUG:
-                print "* DEBUG: userinfo: USER: %s" % (user)
+                print ("* DEBUG: userinfo: USER: %s" % (user))
                 
         if DO_DEBUG:
-            print SEPARATOR
+            print (SEPARATOR)
 
         return True
     
@@ -253,15 +253,15 @@ class UserInfo:
     # Pretty-print info about the object
     def pretty_print(self):
         index = 1;
-        print SEPARATOR
-        print "USER INFO: %d user(s)" % (
-            len(self.users))
-        print SEPARATOR
+        print (SEPARATOR)
+        print ("USER INFO: %d user(s)" % (
+            len(self.users)))
+        print (SEPARATOR)
         for user in self.users:
-            print "USER #%d:" % (index)
-            print user
+            print ("USER #%d:" % (index))
+            print (user)
             index += 1
-        print SEPARATOR
+        print (SEPARATOR)
 
 
 #############################################################################
@@ -280,13 +280,13 @@ if __name__ == '__main__':
         # TEST #1
         if enabled[0]:
             TEST_FILE = DATABASE_DIR + "users.yml"
-            print SEPARATO2
-            print "TEST #1: Get user information from YAML file: %s." % (
-                TEST_FILE)
-            print SEPARATO2
+            print (SEPARATO2)
+            print ("TEST #1: Get user information from YAML file: %s." % (
+                TEST_FILE))
+            print (SEPARATO2)
             user_info = UserInfo()
             user_info.parse_YAML_file(TEST_FILE)
             user_info.pretty_print()
     
     except IOError as error:
-        print "* ERROR: userinfo: %s." % (error)
+        print ("* ERROR: userinfo: %s." % (error))

@@ -1,18 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #############################################################################
 # Classes related to the CyTrONE content upload server operation
 #############################################################################
 
 # External imports
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 import random
 import subprocess
 import os
 import sys
 import getopt
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 
 # Internal imports
 import userinfo
@@ -84,8 +84,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         params = query.Parameters(self)
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "* INFO: contsrv: Request to content server: POST parameters: %s" % (params)
+            print (SEPARATOR)
+            print ("* INFO: contsrv: Request to content server: POST parameters: %s" % (params))
 
         # Get parameter values for given keys
         user_id = params.get(query.Parameters.USER)
@@ -95,15 +95,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         activity_id = params.get(query.Parameters.ACTIVITY_ID)
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "PARAMETERS:"
-            print SEPARATOR
-            print "USER: %s" % (user_id)
-            print "ACTION: %s" % (action)
-            print "DESCRIPTION FILE:\n%s" % (description_file) 
-            print "RANGE_ID: %s" % (range_id)
-            print "ACTIVITY_ID: %s" % (activity_id)
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("PARAMETERS:")
+            print (SEPARATOR)
+            print ("USER: %s" % (user_id))
+            print ("ACTION: %s" % (action))
+            print ("DESCRIPTION FILE:\n%s" % (description_file))
+            print ("RANGE_ID: %s" % (range_id))
+            print ("ACTIVITY_ID: %s" % (activity_id))
+            print (SEPARATOR)
 
 
         ## Handle user information
@@ -148,11 +148,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                 content_file = open(content_file_name, "w")
                 content_file.write(description_file)
                 content_file.close()
-                print "* INFO: contsrv: Saved POSTed content description to file '%s'." % (content_file_name)
+                print ("* INFO: contsrv: Saved POSTed content description to file '%s'." % (content_file_name))
             except IOError as error:
                 print("* ERROR: contsrv: Could not write to file {}: {}".format(content_file_name, error))
 
-            print "* INFO: contsrv: Start LMS content upload."
+            print ("* INFO: contsrv: Start LMS content upload.")
 
             # Use Moodle to really do the content upload
             if USE_MOODLE:
@@ -160,11 +160,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # ./cylms.py --convert-content training_example.yml --config-file config_example --add-to-lms 1
                     try:
                         add_output = subprocess.check_output(
-                            ["python", "-u", CYLMS_PATH + "cylms.py", "--convert-content", content_file_name,
+                            ["python3", "-u", CYLMS_PATH + "cylms.py", "--convert-content", content_file_name,
                              "--config-file", CYLMS_CONFIG, "--add-to-lms", range_id], stderr=subprocess.STDOUT)
                         # Find the activity id
                         activity_id = None
                         for output_line in add_output.splitlines():
+                            output_line = output_line.decode('utf-8')
                             print(output_line)
                             # Extract the course id
                             activity_id_tag = "activity_id="
@@ -194,9 +195,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     sleep_time = random.randint(SIMULATION_RAND_MIN, SIMULATION_RAND_MAX)
                 else:
                     sleep_time = SIMULATION_DURATION
-                print Storyboard.SEPARATOR3
-                print "* INFO: contsrv: Simulate upload by sleeping %d s." % (sleep_time)
-                print Storyboard.SEPARATOR3
+                print (Storyboard.SEPARATOR3)
+                print ("* INFO: contsrv: Simulate upload by sleeping %d s." % (sleep_time))
+                print (Storyboard.SEPARATOR3)
                 time.sleep(sleep_time)
 
                 # Simulate the success or failure of the upload
@@ -210,7 +211,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         elif action == query.Parameters.REMOVE_CONTENT: 
 
-            print "* INFO: contsrv: Start LMS content removal."
+            print ("* INFO: contsrv: Start LMS content removal.")
 
             # Check that range_id is not empty
             if not range_id:
@@ -228,7 +229,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # ./cylms.py --config-file config_example --remove-from-lms 1,ID
                     config_arg = " --config-file {}".format(CYLMS_CONFIG)
                     remove_arg = " --remove-from-lms {},{}".format(range_id, activity_id)
-                    command = "python -u " + CYLMS_PATH + "cylms.py" + config_arg + remove_arg
+                    command = "python3 -u " + CYLMS_PATH + "cylms.py" + config_arg + remove_arg
                     if DO_DEBUG: print("* DEBUG: contsrv: command: " + command)
                     return_value = os.system(command)
                     exit_status = os.WEXITSTATUS(return_value)
@@ -248,9 +249,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     sleep_time = random.randint(SIMULATION_RAND_MIN, SIMULATION_RAND_MAX)
                 else:
                     sleep_time = SIMULATION_DURATION
-                print Storyboard.SEPARATOR3
-                print "* INFO: contsrv: Simulate removal by sleeping %d s." % (sleep_time)
-                print Storyboard.SEPARATOR3
+                print (Storyboard.SEPARATOR3)
+                print ("* INFO: contsrv: Simulate removal by sleeping %d s." % (sleep_time))
+                print (Storyboard.SEPARATOR3)
                 time.sleep(sleep_time)
 
                 # Simulate the success or failure of the upload
@@ -262,7 +263,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # Catch potential unimplemented actions (if any)
         else:
-            print "* WARNING: contsrv: Unknown action: %s." % (action)
+            print ("* WARNING: contsrv: Unknown action: %s." % (action))
 
         # Send response header to requester (triggers log_message())
         self.send_response(SUCCESS_CODE)
@@ -270,21 +271,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers() 
 
         # Send scenario database content information to requester
-        self.wfile.write(response_content)
+        self.wfile.write(response_content.encode('utf-8'))
 
         # Output server reply
-        print "* INFO: contsrv: Server response content: %s" % (response_content)
+        print ("* INFO: contsrv: Server response content: %s" % (response_content))
 
 
 # Print usage information
 def usage():
-    print "OVERVIEW: CyTrONE content server that manages LMS training support via CyLMS.\n"
-    print "USAGE: contsrv.py [options]\n"
-    print "OPTIONS:"
-    print "-h, --help           Display help"
-    print "-n, --no-lms         Disable LMS use => only simulate actions"
-    print "-p, --path <PATH>    Set the location where CyLMS is installed"
-    print "-c, --config <FILE>  Set configuration file for LMS operations\n"
+    print ("OVERVIEW: CyTrONE content server that manages LMS training support via CyLMS.\n")
+    print ("USAGE: contsrv.py [options]\n")
+    print ("OPTIONS:")
+    print ("-h, --help           Display help")
+    print ("-n, --no-lms         Disable LMS use => only simulate actions")
+    print ("-p, --path <PATH>    Set the location where CyLMS is installed")
+    print ("-c, --config <FILE>  Set configuration file for LMS operations\n")
 
 # Use threads to handle multiple clients
 # Note: By using ForkingMixIn instead of ThreadingMixIn,
@@ -306,7 +307,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hnp:c:", ["help", "no-lms", "path=", "config="])
     except getopt.GetoptError as err:
-        print "* ERROR: contsrv: Command-line argument error: %s" % (str(err))
+        print ("* ERROR: contsrv: Command-line argument error: %s" % (str(err)))
         usage()
         sys.exit(1)
     for opt, arg in opts:
@@ -349,13 +350,13 @@ def main(argv):
             server = HTTPServer((server_address, server_port), RequestHandler)
 
         # Start the web server
-        print "* INFO: contsrv: CyTrONE content server listens on %s:%d%s." % (
-            server_address, server_port, multi_threading)
+        print ("* INFO: contsrv: CyTrONE content server listens on %s:%d%s." % (
+            server_address, server_port, multi_threading))
         if not USE_MOODLE:
-            print "* INFO: contsrv: LMS use is disabled => only simulate actions."
+            print ("* INFO: contsrv: LMS use is disabled => only simulate actions.")
         else:
-            print "* INFO: contsrv: Using CyLMS software installed in %s." % (CYLMS_PATH)
-            print "* INFO: contsrv: Using CyLMS configuration file %s." % (CYLMS_CONFIG)
+            print ("* INFO: contsrv: Using CyLMS software installed in %s." % (CYLMS_PATH))
+            print ("* INFO: contsrv: Using CyLMS configuration file %s." % (CYLMS_CONFIG))
 
         if SERVE_FOREVER:
             server.serve_forever()
@@ -364,14 +365,14 @@ def main(argv):
 
     # Catch socket errors
     except IOError:
-        print "* ERROR: contsrv: CyTrONE content server: HTTPServer error (server may be running already)."
+        print ("* ERROR: contsrv: CyTrONE content server: HTTPServer error (server may be running already).")
 
     # Deal with keyboard interrupts
     except KeyboardInterrupt:
-        print "* INFO: contsrv: Interrupted via ^C => shut down server."
+        print ("* INFO: contsrv: Interrupted via ^C => shut down server.")
         server.socket.close()
 
-    print "* INFO: contsrv: CyTrONE content server ended execution."
+    print ("* INFO: contsrv: CyTrONE content server ended execution.")
 
 
 #############################################################################

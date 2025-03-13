@@ -1,17 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #############################################################################
 # Classes related to the CyTrONE cyber range instantiation server operation
 #############################################################################
 
 # External imports
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 import random
 import os
 import sys
 import getopt
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 import urllib
 
 # Internal imports
@@ -119,8 +119,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         params = query.Parameters(self)
 
         if DEBUG:
-            print SEPARATOR
-            print "* DEBUG: instsrv: Client POST request: POST parameters: %s" % (params)
+            print (SEPARATOR)
+            print ("* DEBUG: instsrv: Client POST request: POST parameters: %s" % (params))
 
         # Get parameter values for given keys
         user_id = params.get(query.Parameters.USER)
@@ -130,15 +130,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         range_id = params.get(query.Parameters.RANGE_ID)
 
         if DEBUG:
-            print SEPARATOR
-            print "PARAMETERS:"
-            print SEPARATOR
-            print "USER: %s" % (user_id)
-            print "ACTION: %s" % (action)
-            print "DESCRIPTION FILE:\n%s" % (description_file) 
-            print "PROGRESSION_SCENARIO: %s" % (progression_scenario)
-            print "RANGE_ID: %s" % (range_id)
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("PARAMETERS:")
+            print (SEPARATOR)
+            print ("USER: %s" % (user_id))
+            print ("ACTION: %s" % (action))
+            print ("DESCRIPTION FILE:\n%s" % (description_file))
+            print ("PROGRESSION_SCENARIO: %s" % (progression_scenario))
+            print ("RANGE_ID: %s" % (range_id))
+            print (SEPARATOR)
 
         ## Handle user information
 
@@ -188,16 +188,16 @@ class RequestHandler(BaseHTTPRequestHandler):
                 range_file = open(range_file_name, "w")
                 range_file.write(description_file)
                 range_file.close()
-                print "* INFO: instsrv: Saved POSTed cyber range description to file '%s'." % (range_file_name)
+                print ("* INFO: instsrv: Saved POSTed cyber range description to file '%s'." % (range_file_name))
             except IOError:
-                print "* ERROR: instsrv: Could not write to file %s." % (range_file_name)
+                print ("* ERROR: instsrv: Could not write to file %s." % (range_file_name))
 
-            print "* INFO: instsrv: Start cyber range instantiation."
+            print ("* INFO: instsrv: Start cyber range instantiation.")
 
             # Use CyRIS to really do cyber range instantiation
             if USE_CYRIS:
                 try:
-                    command = "python -u " + CYRIS_PATH + "main/cyris.py " + range_file_name + " " + CYRIS_PATH + CYRIS_CONFIG_FILENAME
+                    command = "python3 -u " + CYRIS_PATH + "main/cyris.py " + range_file_name + " " + CYRIS_PATH + CYRIS_CONFIG_FILENAME
                     return_value = os.system(command)
                     exit_status = os.WEXITSTATUS(return_value)
                     if exit_status != 0:
@@ -209,7 +209,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     with open(status_filename, 'r') as status_file:
                         status_file_content = status_file.read()
                         if DEBUG:
-                            print "* DEBUG: instsrv: Status file content=", status_file_content
+                            print ("* DEBUG: instsrv: Status file content=", status_file_content)
                         if Storyboard.SERVER_STATUS_SUCCESS in status_file_content:
 
                             # Get notification text
@@ -219,12 +219,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                                            range_id,
                                                                            notification_filename_short)
                             if DEBUG:
-                                print "* DEBUG: instsrv: Notification file name=", notification_filename
+                                print ("* DEBUG: instsrv: Notification file name=", notification_filename)
 
                             message = None
                             with open(notification_filename, 'r') as notification_file:
                                 notification_file_content = notification_file.read()
-                                message = urllib.quote(notification_file_content)
+                                message = urllib.parse.quote(notification_file_content)
 
                             response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
 
@@ -235,9 +235,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                             try:
                                 if USE_CNT2LMS_SCRIPT_GENERATION:
                                     ssh_command = "ssh -tt -o 'ProxyCommand ssh cyuser@172.16.1.3 -W %h:%p' root@moodle"
-                                    python_command = "python -u " + CNT2LMS_PATH + "get_cyris_result.py " + CYRIS_MASTER_HOST + " " + CYRIS_MASTER_ACCOUNT + " " + CYRIS_PATH + CYRIS_RANGE_DIRECTORY + " " + range_id + " 1"
+                                    python_command = "python3 -u " + CNT2LMS_PATH + "get_cyris_result.py " + CYRIS_MASTER_HOST + " " + CYRIS_MASTER_ACCOUNT + " " + CYRIS_PATH + CYRIS_RANGE_DIRECTORY + " " + range_id + " 1"
                                     command = ssh_command + " \"" + python_command + "\""
-                                    print "* DEBUG: instsrv: get_cyris_result command: " + command
+                                    print ("* DEBUG: instsrv: get_cyris_result command: " + command)
                                     return_value = os.system(command)
                                     exit_status = os.WEXITSTATUS(return_value)
                                     if exit_status == 0:
@@ -246,16 +246,16 @@ class RequestHandler(BaseHTTPRequestHandler):
                                     else:
                                         #self.send_error(SERVER_ERROR, "LMS terminal preparation issue")
                                         #return
-                                        print "* DEBUG: instsrv: LMS terminal preparation issue"
+                                        print ("* DEBUG: instsrv: LMS terminal preparation issue")
                             except IOError:
                                 #self.send_error(SERVER_ERROR, "LMS terminal preparation I/O error)
                                 #return
-                                print "* DEBUG: instsrv: LMS terminal preparation I/O error"
+                                print ("* DEBUG: instsrv: LMS terminal preparation I/O error")
 
                             # CyPROM related functionality
                             if progression_scenario:
 
-                                print "* INFO: instsrv: Run CyPROM using scenario '{}'".format(progression_scenario)
+                                print ("* INFO: instsrv: Run CyPROM using scenario '{}'".format(progression_scenario))
 
                                 # Build CyRIS details file name
                                 details_filename_short = CYRIS_DETAILS_TEMPLATE.format(range_id)
@@ -264,7 +264,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                                           range_id,
                                                                           details_filename_short)
                                 # Build CyPROM command (note the background execution!)
-                                cyprom_command = "python -u {0}main/cyprom.py --scenario {1} --cyris {2} &".format(CYPROM_PATH, progression_scenario, details_filename)
+                                cyprom_command = "python3 -u {0}main/cyprom.py --scenario {1} --cyris {2} &".format(CYPROM_PATH, progression_scenario, details_filename)
 
                                 # Execute the command and handle the exit status
                                 return_value = os.system(cyprom_command)
@@ -292,9 +292,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     sleep_time = random.randint(SIMULATION_RAND_MIN, SIMULATION_RAND_MAX)
                 else:
                     sleep_time = SIMULATION_DURATION
-                print Storyboard.SEPARATOR3
-                print "* INFO: instsrv: Simulate instantiation by sleeping %d s." % (sleep_time)
-                print Storyboard.SEPARATOR3
+                print (Storyboard.SEPARATOR3)
+                print ("* INFO: instsrv: Simulate instantiation by sleeping %d s." % (sleep_time))
+                print (Storyboard.SEPARATOR3)
                 time.sleep(sleep_time)
 
                 # Simulate the success or failure of the instantiation
@@ -303,17 +303,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                     notification_filename = "{0}/{1}".format(DATABASE_DIR,
                                                              CYRIS_NOTIFICATION_SIMULATED)
                     if DEBUG:
-                        print "* DEBUG: instsrv: Simulated notification file name=", notification_filename
+                        print ("* DEBUG: instsrv: Simulated notification file name=", notification_filename)
 
                     message = None
                     with open(notification_filename, 'r') as notification_file:
                         notification_file_content = notification_file.read()
-                        message = urllib.quote(notification_file_content)
+                        message = urllib.parse.quote(notification_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
 
                     # CyPROM related functionality
                     if progression_scenario:
-                        print "* INFO: instsrv: Simulated CyPROM execution using scenario '{}'.".format(progression_scenario)
+                        print ("* INFO: instsrv: Simulated CyPROM execution using scenario '{}'.".format(progression_scenario))
 
                 else:
                     response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -328,13 +328,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_error(REQUEST_ERROR, "Invalid range id")
                 return
 
-            print "* INFO: instsrv: Start destruction of cyber range with id %s." % (range_id)
+            print ("* INFO: instsrv: Start destruction of cyber range with id %s." % (range_id))
 
             # Use CyRIS to really do cyber range destruction
             if USE_CYRIS:
                 destruction_filename = CYRIS_PATH + CYRIS_DESTRUCTION_SCRIPT
                 destruction_command = "{0} {1} {2}".format(destruction_filename, range_id, CYRIS_PATH + CYRIS_CONFIG_FILENAME)
-                print "* DEBUG: instrv: destruction_command: " + destruction_command
+                print ("* DEBUG: instrv: destruction_command: " + destruction_command)
                 return_value = os.system(destruction_command)
                 exit_status = os.WEXITSTATUS(return_value)
                 if exit_status == 0:
@@ -350,9 +350,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     sleep_time = random.randint(SIMULATION_RAND_MIN, SIMULATION_RAND_MAX)
                 else:
                     sleep_time = SIMULATION_DURATION
-                print Storyboard.SEPARATOR3
-                print "* INFO: instsrv: Simulate destruction by sleeping %d s." % (sleep_time)
-                print Storyboard.SEPARATOR3
+                print (Storyboard.SEPARATOR3)
+                print ("* INFO: instsrv: Simulate destruction by sleeping %d s." % (sleep_time))
+                print (Storyboard.SEPARATOR3)
                 time.sleep(sleep_time)
 
                 # Simulate the success or failure of the destruction
@@ -374,12 +374,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                            range_id,
                                                            notification_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: Notification file name=", notification_filename
+                print ("* DEBUG: instsrv: Notification file name=", notification_filename)
             message = None
             try:
                 with open(notification_filename, 'r') as notification_file:
                     notification_file_content = notification_file.read()
-                    message = urllib.quote(notification_file_content)
+                    message = urllib.parse.quote(notification_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -397,12 +397,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                             range_id,
                                                             range_details_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: Notification file name=", range_details_filename
+                print ("* DEBUG: instsrv: Notification file name=", range_details_filename)
             message = None
             try:
                 with open(range_details_filename, 'r') as range_details_file:
                     range_details_file_content = range_details_file.read()
-                    message = urllib.quote(range_details_file_content)
+                    message = urllib.parse.quote(range_details_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -420,12 +420,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                            range_id,
                                                            entry_points_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: Entry_point file name=", entry_points_filename
+                print ("* DEBUG: instsrv: Entry_point file name=", entry_points_filename)
             message = None
             try:
                 with open(entry_points_filename, 'r') as entry_points_file:
                     entry_points_file_content = entry_points_file.read()
-                    message = urllib.quote(entry_points_file_content)
+                    message = urllib.parse.quote(entry_points_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -443,12 +443,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                                  range_id,
                                                                  cr_creation_status_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: Cr_creation_status file name=", cr_creation_status_filename
+                print ("* DEBUG: instsrv: Cr_creation_status file name=", cr_creation_status_filename)
             message = None
             try:
                 with open(cr_creation_status_filename, 'r') as cr_creation_status_file:
                     cr_creation_status_file_content = cr_creation_status_file.read()
-                    message = urllib.quote(cr_creation_status_file_content)
+                    message = urllib.parse.quote(cr_creation_status_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -466,12 +466,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                      range_id,
                                                      initif_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: Initif file name=", initif_filename
+                print ("* DEBUG: instsrv: Initif file name=", initif_filename)
             message = None
             try:
                 with open(initif_filename, 'r') as initif_file:
                     initif_file_content = initif_file.read()
-                    message = urllib.quote(initif_file_content)
+                    message = urllib.parse.quote(initif_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
@@ -489,19 +489,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                            range_id,
                                                            creation_log_filename_short)
             if DEBUG:
-                print "* DEBUG: instsrv: CREATION_LOG file name=", creation_log_filename
+                print ("* DEBUG: instsrv: CREATION_LOG file name=", creation_log_filename)
             message = None
             try:
                 with open(creation_log_filename, 'r') as creation_log_file:
                     creation_log_file_content = creation_log_file.read()
-                    message = urllib.quote(creation_log_file_content)
+                    message = urllib.parse.quote(creation_log_file_content)
                     response_content = self.build_response(Storyboard.SERVER_STATUS_SUCCESS, message)
             except:
                 response_content = self.build_response(Storyboard.SERVER_STATUS_ERROR,
                                                        "CyRIS creation_log issue")
         # Catch potential unimplemented actions (if any)
         else:
-            print "* WARNING: instsrv: Unknown action: %s." % (action)
+            print ("* WARNING: instsrv: Unknown action: %s." % (action))
 
         # Send response header to requester (triggers log_message())
         self.send_response(HTTP_OK_CODE)
@@ -509,11 +509,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers() 
 
         # Send scenario database content information to requester
-        self.wfile.write(response_content)
+        self.wfile.write(response_content.encode('utf-8'))
 
         # Output server reply
         if DEBUG:
-            print "* DEBUG: instsrv: Server response content: %s" % (response_content)
+            print ("* DEBUG: instsrv: Server response content: %s" % (response_content))
 
     def build_response(self, status, message=None):
 
@@ -531,24 +531,24 @@ class RequestHandler(BaseHTTPRequestHandler):
         return response_body
 
     def handle_cyris_error(self, range_id):
-        print "* INFO: Error occurred in CyRIS => perform cyber range cleanup."
+        print ("* INFO: Error occurred in CyRIS => perform cyber range cleanup.")
         destruction_filename = CYRIS_PATH + CYRIS_DESTRUCTION_SCRIPT
         destruction_command = "{0} {1} {2}".format(destruction_filename, range_id, CYRIS_PATH + CYRIS_CONFIG_FILENAME)
-        print "* DEBUG: instrv: destruction_command: " + destruction_command
+        print ("* DEBUG: instrv: destruction_command: " + destruction_command)
         return_value = os.system(destruction_command)
         exit_status = os.WEXITSTATUS(return_value)
         if exit_status != 0:
-            print "* ERROR: instrv: Range cleanup failed."
+            print ("* ERROR: instrv: Range cleanup failed.")
 
 # Print usage information
 def usage():
-    print "OVERVIEW: CyTrONE instantiation server that manages the CyRIS cyber range instantiation system.\n"
-    print "USAGE: instsrv.py [options]\n"
-    print "OPTIONS:"
-    print "-h, --help           Display help"
-    print "-n, --no-inst        Disable instantiation => only simulate actions"
-    print "-p, --path <PATH>    Set the location where CyRIS is installed"
-    print "-m, --cyprom <PATH>  Set the location where CyPROM is installed\n"
+    print ("OVERVIEW: CyTrONE instantiation server that manages the CyRIS cyber range instantiation system.\n")
+    print ("USAGE: instsrv.py [options]\n")
+    print ("OPTIONS:")
+    print ("-h, --help           Display help")
+    print ("-n, --no-inst        Disable instantiation => only simulate actions")
+    print ("-p, --path <PATH>    Set the location where CyRIS is installed")
+    print ("-m, --cyprom <PATH>  Set the location where CyPROM is installed\n")
 
 
 # Use threads to handle multiple clients
@@ -571,7 +571,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hnp:m:", ["help", "no-inst", "path=", "cyprom="])
     except getopt.GetoptError as err:
-        print "* ERROR: instsrv: Command-line argument error: %s" % (str(err))
+        print ("* ERROR: instsrv: Command-line argument error: %s" % (str(err)))
         usage()
         sys.exit(1)
     for opt, arg in opts:
@@ -614,13 +614,13 @@ def main(argv):
             server = HTTPServer((server_address, server_port), RequestHandler)
 
         # Start the web server
-        print "* INFO: instsrv: CyTrONE instantiation server listens on %s:%d%s." % (
-            server_address, server_port, multi_threading)
+        print ("* INFO: instsrv: CyTrONE instantiation server listens on %s:%d%s." % (
+            server_address, server_port, multi_threading))
         if not USE_CYRIS:
-            print "* INFO: instsrv: CyRIS use is disabled => only simulate actions."
+            print ("* INFO: instsrv: CyRIS use is disabled => only simulate actions.")
         else:
-            print "* INFO: instsrv: Using CyRIS software installed in %s." % (CYRIS_PATH)
-            print "* INFO: instsrv: Using CyPROM software installed in %s." % (CYPROM_PATH)
+            print ("* INFO: instsrv: Using CyRIS software installed in %s." % (CYRIS_PATH))
+            print ("* INFO: instsrv: Using CyPROM software installed in %s." % (CYPROM_PATH))
 
         if SERVE_FOREVER:
             server.serve_forever()
@@ -629,10 +629,10 @@ def main(argv):
 
     # Deal with keyboard interrupts
     except KeyboardInterrupt:
-        print "* INFO: instsrv: Interrupted via ^C => shut down server."
+        print ("* INFO: instsrv: Interrupted via ^C => shut down server.")
         server.socket.close()
 
-    print "* INFO: instsrv: CyTrONE instantiation server ended execution."
+    print ("* INFO: instsrv: CyTrONE instantiation server ended execution.")
 
 
 #############################################################################

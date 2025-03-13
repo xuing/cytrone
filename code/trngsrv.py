@@ -1,18 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #############################################################################
 # Classes related to the CyTrONE training server operation
 #############################################################################
 
 # External imports
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import ssl
-import urllib
+import urllib.request
 import time
 import random
 import sys
 import getopt
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 import threading
 from string import Template
 import yaml
@@ -32,7 +32,7 @@ from password import Password
 # Constants
 #############################################################################
 
-CYTRONE_VERSION = "1.1"
+CYTRONE_VERSION = "1.3"
 
 # Web server constants
 LOCAL_ADDRESS = "127.0.0.1"
@@ -40,7 +40,7 @@ SERVER_PORT   = 8082
 HTTP_STATUS_OK = 200
 REQUEST_ERROR = 404
 SERVER_ERROR  = 500
-LOCAL_SERVER  = False
+LOCAL_SERVER  = True # Change between accepting any or only local connections
 SERVE_FOREVER = True # Use serve count if not using local server?!
 CONTENT_SERVER_URL = "http://127.0.0.1:8084"
 INSTANTIATION_SERVER_URL = "http://127.0.0.1:8083"
@@ -211,8 +211,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Get the parameters of the POST request
         params = query.Parameters(self)
 
-        print ""
-        print Storyboard.SEPARATOR2
+        print ("")
+        print (Storyboard.SEPARATOR2)
         if Storyboard.ENABLE_PASSWORD:
             print("* INFO: trngsrv: Request POST parameters: [not shown because password use is enabled]")
         else:
@@ -230,20 +230,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         range_id = params.get(query.Parameters.RANGE_ID)
 
         if DEBUG:
-            print Storyboard.SEPARATOR1
-            print "POST PARAMETERS:"
-            print Storyboard.SEPARATOR1
-            print "USER: %s" % (user_id)
+            print (Storyboard.SEPARATOR1)
+            print ("POST PARAMETERS:")
+            print (Storyboard.SEPARATOR1)
+            print ("USER: %s" % (user_id))
             if password:
-                print "PASSWORD: ******"
-            print "ACTION: %s" % (action)
-            print "LANGUAGE: %s" % (language)
-            print "COUNT: %s" % (instance_count)
-            print "TYPE: %s" % (ttype)
-            print "SCENARIO: %s" % (scenario)
-            print "LEVEL: %s" % (level)
-            print "RANGE_ID: %s" % (range_id)
-            print Storyboard.SEPARATOR1
+                print ("PASSWORD: ******")
+            print ("ACTION: %s" % (action))
+            print ("LANGUAGE: %s" % (language))
+            print ("COUNT: %s" % (instance_count))
+            print ("TYPE: %s" % (ttype))
+            print ("SCENARIO: %s" % (scenario))
+            print ("LEVEL: %s" % (level))
+            print ("RANGE_ID: %s" % (range_id))
+            print (Storyboard.SEPARATOR1)
 
         ## Verify user information
 
@@ -310,7 +310,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             training_settings_file = DATABASE_DIR + SCENARIOS_FILE_EN
 
         if DEBUG:
-            print "* DEBUG: trngsrv: Read training settings from '%s'..." % (training_settings_file)
+            print ("* DEBUG: trngsrv: Read training settings from '%s'..." % (training_settings_file))
 
         # Note: Only reading data that is (potentially) modified externally =>
         #       no need for synchronization
@@ -371,7 +371,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                      # Convert to string for internal representation
                     cyber_range_id = str(cyber_range_id)
                     self.pending_sessions.append(cyber_range_id)
-                    print "* INFO: trngsrv: Allocated session with ID #%s." % (cyber_range_id)
+                    print ("* INFO: trngsrv: Allocated session with ID #%s." % (cyber_range_id))
                 else:
                     self.respond_error(Storyboard.SESSION_ALLOCATION_ERROR)
                     return
@@ -389,7 +389,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             content_file_name = DATABASE_DIR + content_file_name
 
             if DEBUG:
-                print "* DEBUG: trngsrv: Training content file: %s" % (content_file_name)
+                print ("* DEBUG: trngsrv: Training content file: %s" % (content_file_name))
 
             # Open the content file
             try:
@@ -398,7 +398,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 content_file.close()
 
             except IOError as error:
-                print "* ERROR: trngsrv: File error: %s." % (error)
+                print ("* ERROR: trngsrv: File error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.CONTENT_LOADING_ERROR)
                 return
@@ -414,14 +414,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.RANGE_ID: cyber_range_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send upload request to content server %s." % (CONTENT_SERVER_URL)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send upload request to content server %s." % (CONTENT_SERVER_URL))
                 if DEBUG:
-                    print "* DEBUG: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(CONTENT_SERVER_URL, query_params)
-                data = data_stream.read()
+                    print ("* DEBUG: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(CONTENT_SERVER_URL, query_params.encode('utf-8'))
+                data = data_stream.read().decode('utf-8')
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Content server response body: %s" % (data)
+                    print ("* DEBUG: trngsrv: Content server response body: %s" % (data))
 
                 (status, activity_id) = query.Response.parse_server_response(data)
 
@@ -433,7 +433,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # Store activity id in session description
                     pass
                 else:
-                    print "* ERROR: trngsrv: Content upload error."
+                    print ("* ERROR: trngsrv: Content upload error.")
                     self.removePendingSession(cyber_range_id)
                     self.respond_error(Storyboard.CONTENT_UPLOAD_ERROR)
                     return
@@ -442,7 +442,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 contsrv_response = data
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.CONTENT_SERVER_ERROR)
                 return
@@ -460,8 +460,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             progression_scenario_name = training_info.get_progression_scenario_name(scenario, level)
 
             if DEBUG:
-                print "* DEBUG: trngsrv: Cyber range file: %s" % (range_file_name)
-                print "* DEBUG: trngsrv: Progression scenario: %s" % (progression_scenario_name)
+                print ("* DEBUG: trngsrv: Cyber range file: %s" % (range_file_name))
+                print ("* DEBUG: trngsrv: Progression scenario: %s" % (progression_scenario_name))
 
             # Open the cyber range file (template)
             try:
@@ -470,7 +470,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 range_file.close()
 
             except IOError as error:
-                print "* ERROR: trngsrv: File error: %s." % (error)
+                print ("* ERROR: trngsrv: File error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.TEMPLATE_LOADING_ERROR)
                 return
@@ -494,14 +494,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if progression_scenario_name:
                     query_tuples[query.Parameters.PROGRESSION_SCENARIO] = progression_scenario_name
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL))
                 if DEBUG:
-                    print "* DEBUG: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(INSTANTIATION_SERVER_URL, query_params)
-                data = data_stream.read()
+                    print ("* DEBUG: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(INSTANTIATION_SERVER_URL, query_params.encode('utf-8'))
+                data = data_stream.read().decode('utf-8')
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Instantiation server response body: %s" % (data)
+                    print ("* DEBUG: trngsrv: Instantiation server response body: %s" % (data))
 
                 # Remove pending session
                 self.removePendingSession(cyber_range_id)
@@ -509,13 +509,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 (status, message) = query.Response.parse_server_response(data)
 
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Response status:", status
-                    print "* DEBUG: trngsrv: Response message:", message
+                    print ("* DEBUG: trngsrv: Response status:", status)
+                    print ("* DEBUG: trngsrv: Response message:", message)
 
                 if status == Storyboard.SERVER_STATUS_SUCCESS:
                     session_name = "Training Session #%s" % (cyber_range_id)
                     crt_time = time.asctime()
-                    print "* INFO: trngsrv: Instantiation successful => save training session: %s (time: %s)." % (session_name, crt_time)
+                    print ("* INFO: trngsrv: Instantiation successful => save training session: %s (time: %s)." % (session_name, crt_time))
 
                     # Synchronize access to active sessions list
                     self.lock_active_sessions.acquire()
@@ -534,7 +534,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     finally:
                         self.lock_active_sessions.release()
                 else:
-                    print "* ERROR: trngsrv: Range instantiation error."
+                    print ("* ERROR: trngsrv: Range instantiation error.")
                     self.respond_error(Storyboard.INSTANTIATION_ERROR)
                     return
 
@@ -542,8 +542,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 instsrv_response = data
 
                 if DEBUG:
-                    print "* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response)
-                    print "* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response)
+                    print ("* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response))
+                    print ("* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response))
 
                 # Prepare the response as a message
                 # TODO: Should create a function to handle this
@@ -553,7 +553,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     response_data = None
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.INSTANTIATION_SERVER_ERROR)
                 return
@@ -593,7 +593,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # Convert to string for internal representation
                     cyber_range_id = str(cyber_range_id)
                     self.pending_sessions.append(cyber_range_id)
-                    print "* INFO: trngsrv: Allocated session with ID #%s." % (cyber_range_id)
+                    print ("* INFO: trngsrv: Allocated session with ID #%s." % (cyber_range_id))
                 else:
                     self.respond_error(Storyboard.SESSION_ALLOCATION_ERROR)
                     return
@@ -611,7 +611,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             spec_file_name = DATABASE_DIR + spec_file_name
 
             if DEBUG:
-                print "* DEBUG: trngsrv: Scenario specification file: %s" % (spec_file_name)
+                print ("* DEBUG: trngsrv: Scenario specification file: %s" % (spec_file_name))
 
             # Open the specification file (template)
             try:
@@ -620,7 +620,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 spec_file.close()
 
             except IOError as error:
-                print "* ERROR: trngsrv: File error: %s." % (error)
+                print ("* ERROR: trngsrv: File error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.TEMPLATE_LOADING_ERROR)
                 return
@@ -640,18 +640,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.RANGE_ID: cyber_range_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL))
                 if DEBUG:
-                    print "* DEBUG: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(INSTANTIATION_SERVER_URL, query_params)
+                    print ("* DEBUG: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(INSTANTIATION_SERVER_URL, query_params.encode('utf-8'))
                 data=None
                 data = data_stream.read()
                 query_result = None
                 query_result = data_stream.read()
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Instantiation server response body: %s" % (data)
-                    print "* DEBUG: trngsrv: Instantiation server response query_result: %s" % (query_result)
+                    print ("* DEBUG: trngsrv: Instantiation server response body: %s" % (data))
+                    print ("* DEBUG: trngsrv: Instantiation server response query_result: %s" % (query_result))
 
                 # Remove pending session
                 self.removePendingSession(cyber_range_id)
@@ -659,13 +659,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 (status, message) = query.Response.parse_server_response(data)
 
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Response status:", status
-                    print "* DEBUG: trngsrv: Response message:", message
+                    print ("* DEBUG: trngsrv: Response status:", status)
+                    print ("* DEBUG: trngsrv: Response message:", message)
 
                 if status == Storyboard.SERVER_STATUS_SUCCESS:
                     pass
                 else:
-                    print "* ERROR: trngsrv: Range instantiation error."
+                    print ("* ERROR: trngsrv: Range instantiation error.")
                     self.respond_error(Storyboard.INSTANTIATION_ERROR)
                     return
 
@@ -673,7 +673,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 instsrv_response = data
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.INSTANTIATION_SERVER_ERROR)
                 return
@@ -689,15 +689,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.RANGE_ID: cyber_range_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send instantiate request to instantiation server %s." % (INSTANTIATION_SERVER_URL))
                 if DEBUG:
-                    print "* DEBUG: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(INSTANTIATION_SERVER_URL, query_params)
+                    print ("* DEBUG: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(INSTANTIATION_SERVER_URL, query_params.encode('utf-8'))
                 query_result = None
-                query_result = data_stream.read()
+                query_result = data_stream.read().decode('utf-8')
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Instantiation server response body: %s" % (query_result)
+                    print ("* DEBUG: trngsrv: Instantiation server response body: %s" % (query_result))
 
                 #############################################################################
                 # Start parse GET_CR_CREATION_LOG & store "exec-result:"
@@ -721,7 +721,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     creation_log_content=creation_log_content[:-2]
                 (status,creation_log_message)=creation_log_content.split(',')
                 (tag,body)=creation_log_message.split(':')
-                decode_mesage=urllib.unquote(body)
+                decode_mesage=urllib.parse.unquote(body)
                 decode_mesage=decode_mesage.split("\n")
                 result_list=[]
                 for lines in decode_mesage :
@@ -730,7 +730,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 all_result = []
                 for instnum,result in enumerate(result_list):
                     tag,ans = result.split()
-                    ans=urllib.unquote(ans)
+                    ans=urllib.parse.unquote(ans)
                     ans=ans.replace("\n", "")
                     ins,guest,num,var=tag.split(",")
                     ins_num=ins.replace("ins", "")
@@ -748,7 +748,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 #############################################################################
 
             except IOError as error:
-                print "* ERROR: trngsrv: File error: %s." % (error)
+                print ("* ERROR: trngsrv: File error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.CONTENT_LOADING_ERROR)
                 return
@@ -764,7 +764,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             content_file_name = DATABASE_DIR + content_file_name
 
             if DEBUG:
-                print "* DEBUG: trngsrv: Training content file: %s" % (content_file_name)
+                print ("* DEBUG: trngsrv: Training content file: %s" % (content_file_name))
 
             # Open the content file
             try:
@@ -773,7 +773,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 content_file.close()
 
             except IOError as error:
-                print "* ERROR: trngsrv: File error: %s." % (error)
+                print ("* ERROR: trngsrv: File error: %s." % (error))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.CONTENT_LOADING_ERROR)
                 return
@@ -789,9 +789,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                         meta_answers.update(meta_answer_par_inst)
                     content_template=Meta_answer_template(content_file_content)
                     if DEBUG:
-                        print meta_answers
+                        print (meta_answers)
                     patched_content=content_template.safe_substitute(meta_answers)
-                    content_list = yaml.load(patched_content)
+                    content_list = yaml.load(patched_content, Loader=yaml.SafeLoader)
                     try:
                         #change 2 dic type
                         for i in content_list:
@@ -830,15 +830,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                             query.Parameters.RANGE_ID: cyber_range_id
                         }
 
-                        query_params = urllib.urlencode(query_tuples)
-                        print "* INFO: trngsrv: Send upload request to content server %s." % (CONTENT_SERVER_URL)
+                        query_params = urllib.parse.urlencode(query_tuples)
+                        print ("* INFO: trngsrv: Send upload request to content server %s." % (CONTENT_SERVER_URL))
                         if DEBUG:
-                            print "* DEBUG: trngsrv: POST parameters: %s" % (query_params)
-                        data_stream = urllib.urlopen(CONTENT_SERVER_URL, query_params)
+                            print ("* DEBUG: trngsrv: POST parameters: %s" % (query_params))
+                        data_stream = urllib.request.urlopen(CONTENT_SERVER_URL, query_params.encode('utf-8'))
                         data = None
-                        data = data_stream.read()
+                        data = data_stream.read().decode('utf-8')
                         if DEBUG:
-                            print "* DEBUG: trngsrv: Content server response body: %s" % (data)
+                            print ("* DEBUG: trngsrv: Content server response body: %s" % (data))
 
                         (status, activity_id) = query.Response.parse_server_response(data)
 
@@ -850,7 +850,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                             # Store activity id in session description
                             session_name = "Training Session #%s" % (cyber_range_id)
                             crt_time = time.asctime()
-                            print "* INFO: trngsrv: Instantiation successful => save training session: %s (time: %s)." % (session_name, crt_time)
+                            print ("* INFO: trngsrv: Instantiation successful => save training session: %s (time: %s)." % (session_name, crt_time))
 
                             # Synchronize access to active sessions list
                             self.lock_active_sessions.acquire()
@@ -870,7 +870,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 self.lock_active_sessions.release()
                                 #pass
                         else:
-                            print "* ERROR: trngsrv: Content upload error."
+                            print ("* ERROR: trngsrv: Content upload error.")
                             self.removePendingSession(cyber_range_id)
                             self.respond_error(Storyboard.CONTENT_UPLOAD_ERROR)
                             return
@@ -879,8 +879,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                         contsrv_response = data
 
                         if DEBUG:
-                            print "* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response)
-                            print "* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response)
+                            print ("* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response))
+                            print ("* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response))
 
                         # Prepare the response as a message
                         # TODO: Should create a function to handle this
@@ -890,12 +890,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                             response_data = None
 
                     except IOError as error:
-                        print "* ERROR: trngsrv: URL error: %s." % (error)
+                        print ("* ERROR: trngsrv: URL error: %s." % (error))
                         self.removePendingSession(cyber_range_id)
                         self.respond_error(Storyboard.CONTENT_SERVER_ERROR)
                         return
             except Exception as e:
-                print "* ERROR: trngsrv: loop error: %s." % (e)
+                print ("* ERROR: trngsrv: loop error: %s." % (e))
                 self.removePendingSession(cyber_range_id)
                 self.respond_error(Storyboard.CONTENT_SERVER_ERROR)
                 return
@@ -944,7 +944,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif action == query.Parameters.END_TRAINING_Variation:
 
             if not range_id:
-                print "* ERROR: trngsrv: %s." % (Storyboard.SESSION_ID_MISSING_ERROR)
+                print ("* ERROR: trngsrv: %s." % (Storyboard.SESSION_ID_MISSING_ERROR))
                 self.respond_error(Storyboard.SESSION_ID_MISSING_ERROR)
                 return
             activity_id = None
@@ -953,7 +953,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                  activity_id = self.check_range_id_exists(range_id, user_id)
                  activity_id_list = self.check_range_id_and_activity_id_exists(range_id, user_id)
                  if not activity_id:
-                     print "* ERROR: trngsrv: Session with ID "+ range_id + " doesn't exist for user " + user_id
+                     print ("* ERROR: trngsrv: Session with ID "+ range_id + " doesn't exist for user " + user_id)
                      error_msg = Storyboard.SESSION_ID_INVALID_ERROR + ": " + range_id
                      self.respond_error(error_msg)
                      return
@@ -973,13 +973,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                         query.Parameters.ACTIVITY_ID: aclist
                     }
 
-                    query_params = urllib.urlencode(query_tuples)
-                    print "* INFO: trngsrv: Send removal request to content server %s." % (CONTENT_SERVER_URL)
-                    print "* INFO: trngsrv: POST parameters: %s" % (query_params)
-                    data_stream = urllib.urlopen(CONTENT_SERVER_URL, query_params)
-                    data = data_stream.read()
+                    query_params = urllib.parse.urlencode(query_tuples)
+                    print ("* INFO: trngsrv: Send removal request to content server %s." % (CONTENT_SERVER_URL))
+                    print ("* INFO: trngsrv: POST parameters: %s" % (query_params))
+                    data_stream = urllib.request.urlopen(CONTENT_SERVER_URL, query_params.encode('utf-8'))
+                    data = data_stream.read().decode('utf-8')
                     if DEBUG:
-                        print "* DEBUG: trngsrv: Content server response body: %s" % (data)
+                        print ("* DEBUG: trngsrv: Content server response body: %s" % (data))
 
                     # We don't parse the response since the content server does not provide
                     # a uniformly formatted one; instead we only check for SUCCESS key
@@ -987,7 +987,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         # Nothing to do on success as there is no additional info provided
                         pass
                     else:
-                        print "* ERROR: trngsrv: Content removal error."
+                        print ("* ERROR: trngsrv: Content removal error.")
                         self.respond_error(Storyboard.CONTENT_REMOVAL_ERROR)
                         return
 
@@ -995,7 +995,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     contsrv_response = data
 
                 except IOError as error:
-                    print "* ERROR: trngsrv: URL error: %s." % (error)
+                    print ("* ERROR: trngsrv: URL error: %s." % (error))
                     self.respond_error(Storyboard.CONTENT_SERVER_ERROR)
                     return
 
@@ -1011,13 +1011,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.RANGE_ID: range_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send destroy request to instantiation server %s." % (INSTANTIATION_SERVER_URL)
-                print "* INFO: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(INSTANTIATION_SERVER_URL, query_params)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send destroy request to instantiation server %s." % (INSTANTIATION_SERVER_URL))
+                print ("* INFO: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(INSTANTIATION_SERVER_URL, query_params.encode('utf-8'))
                 data = data_stream.read()
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Instantiation server response body: %s" % (data)
+                    print ("* DEBUG: trngsrv: Instantiation server response body: %s" % (data))
 
                 (status, message) = query.Response.parse_server_response(data)
 
@@ -1031,7 +1031,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         for ac in activity_id_list:
                             # Remove session and save to file
                             if not session_info.remove_session_variation(range_id, user_id,ac):
-                                print "* ERROR: Cannot remove training session %s." % (range_id)
+                                print ("* ERROR: Cannot remove training session %s." % (range_id))
                                 self.respond_error(Storyboard.SESSION_INFO_CONSISTENCY_ERROR)
                                 return
                             else:
@@ -1040,22 +1040,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                         self.lock_active_sessions.release()
 
                 else:
-                    print "* ERROR: trngsrv: Range destruction error: %s." % (message)
+                    print ("* ERROR: trngsrv: Range destruction error: %s." % (message))
                     self.respond_error(Storyboard.DESTRUCTION_ERROR)
                     return
 
                 instsrv_response = data
 
                 if DEBUG:
-                    print "* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response)
-                    print "* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response)
+                    print ("* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response))
+                    print ("* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response))
 
                 # Prepare the response: no data needs to be returned,
                 # hence we set the content to None
                 response_data = None
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.respond_error(Storyboard.INSTANTIATION_SERVER_ERROR)
                 return
         ####################################################################
@@ -1064,7 +1064,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif action == query.Parameters.END_TRAINING:
 
             if not range_id:
-                print "* ERROR: trngsrv: %s." % (Storyboard.SESSION_ID_MISSING_ERROR)
+                print ("* ERROR: trngsrv: %s." % (Storyboard.SESSION_ID_MISSING_ERROR))
                 self.respond_error(Storyboard.SESSION_ID_MISSING_ERROR)
                 return
 
@@ -1073,7 +1073,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
                 activity_id = self.check_range_id_exists(range_id, user_id)
                 if not activity_id:
-                    print "* ERROR: trngsrv: Session with ID "+ range_id + " doesn't exist for user " + user_id
+                    print ("* ERROR: trngsrv: Session with ID "+ range_id + " doesn't exist for user " + user_id)
                     error_msg = Storyboard.SESSION_ID_INVALID_ERROR + ": " + range_id
                     self.respond_error(error_msg)
                     return
@@ -1094,13 +1094,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.ACTIVITY_ID: activity_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send removal request to content server %s." % (CONTENT_SERVER_URL) 
-                print "* INFO: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(CONTENT_SERVER_URL, query_params)
-                data = data_stream.read()
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send removal request to content server %s." % (CONTENT_SERVER_URL))
+                print ("* INFO: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(CONTENT_SERVER_URL, query_params.encode('utf-8'))
+                data = data_stream.read().decode('utf-8')
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Content server response body: %s" % (data)
+                    print ("* DEBUG: trngsrv: Content server response body: %s" % (data))
 
                 # We don't parse the response since the content server does not provide
                 # a uniformly formatted one; instead we only check for SUCCESS key
@@ -1108,7 +1108,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # Nothing to do on success as there is no additional info provided
                     pass
                 else:
-                    print "* ERROR: trngsrv: Content removal error."
+                    print ("* ERROR: trngsrv: Content removal error.")
                     self.respond_error(Storyboard.CONTENT_REMOVAL_ERROR)
                     return
 
@@ -1116,7 +1116,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 contsrv_response = data
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.respond_error(Storyboard.CONTENT_SERVER_ERROR)
                 return
 
@@ -1132,13 +1132,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                     query.Parameters.RANGE_ID: range_id
                 }
 
-                query_params = urllib.urlencode(query_tuples)
-                print "* INFO: trngsrv: Send destroy request to instantiation server %s." % (INSTANTIATION_SERVER_URL) 
-                print "* INFO: trngsrv: POST parameters: %s" % (query_params)
-                data_stream = urllib.urlopen(INSTANTIATION_SERVER_URL, query_params)
+                query_params = urllib.parse.urlencode(query_tuples)
+                print ("* INFO: trngsrv: Send destroy request to instantiation server %s." % (INSTANTIATION_SERVER_URL))
+                print ("* INFO: trngsrv: POST parameters: %s" % (query_params))
+                data_stream = urllib.request.urlopen(INSTANTIATION_SERVER_URL, query_params.encode('utf-8'))
                 data = data_stream.read()
                 if DEBUG:
-                    print "* DEBUG: trngsrv: Instantiation server response body: %s" % (data)
+                    print ("* DEBUG: trngsrv: Instantiation server response body: %s" % (data))
 
                 (status, message) = query.Response.parse_server_response(data)
 
@@ -1152,7 +1152,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                         # Remove session and save to file
                         if not session_info.remove_session(range_id, user_id):
-                            print "* ERROR: Cannot remove training session %s." % (range_id)
+                            print ("* ERROR: Cannot remove training session %s." % (range_id))
                             self.respond_error(Storyboard.SESSION_INFO_CONSISTENCY_ERROR)
                             return
                         else:
@@ -1161,34 +1161,34 @@ class RequestHandler(BaseHTTPRequestHandler):
                         self.lock_active_sessions.release()
 
                 else:
-                    print "* ERROR: trngsrv: Range destruction error: %s." % (message)
+                    print ("* ERROR: trngsrv: Range destruction error: %s." % (message))
                     self.respond_error(Storyboard.DESTRUCTION_ERROR)
                     return
 
                 instsrv_response = data
 
                 if DEBUG:
-                    print "* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response)
-                    print "* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response)
+                    print ("* DEBUG: trngsrv: contsrv response: %s" %(contsrv_response))
+                    print ("* DEBUG: trngsrv: instsrv response: %s" %(instsrv_response))
 
                 # Prepare the response: no data needs to be returned,
                 # hence we set the content to None
                 response_data = None
 
             except IOError as error:
-                print "* ERROR: trngsrv: URL error: %s." % (error)
+                print ("* ERROR: trngsrv: URL error: %s." % (error))
                 self.respond_error(Storyboard.INSTANTIATION_SERVER_ERROR)
                 return
 
         ####################################################################
         # Catch unknown actions
         else:
-            print "* WARNING: trngsrv: Unknown action: %s." % (action)
+            print ("* WARNING: trngsrv: Unknown action: %s." % (action))
 
         # Emulate communication delay
         if EMULATE_DELAY:
             sleep_time = random.randint(2,5)
-            print "* INFO: trngsrv: Simulate communication by sleeping %d s." % (sleep_time)
+            print ("* INFO: trngsrv: Simulate communication by sleeping %d s." % (sleep_time))
             time.sleep(sleep_time)
 
         # Respond to requester with SUCCESS
@@ -1225,11 +1225,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             response_body = '[{' + response_status + '}]'
 
         # Send response to requester
-        self.wfile.write(response_body)
+        self.wfile.write(response_body.encode('utf-8'))
 
         # Output server response body
-        print "* INFO: trngsrv: Server response body: %s" % (response_body)
-        print Storyboard.SEPARATOR2
+        print ("* INFO: trngsrv: Server response body: %s" % (response_body))
+        print (Storyboard.SEPARATOR2)
 
     # Respond to requester that operation encountered an error
     def respond_error(self, message):
@@ -1252,11 +1252,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             response_body = '[{' + response_status + '}]'
 
         # Send response to requester
-        self.wfile.write(response_body)
+        self.wfile.write(response_body.encode('utf-8'))
 
         # Output server response body
-        print "* INFO: trngsrv: Server response body: %s" % (response_body)
-        print Storyboard.SEPARATOR2
+        print ("* INFO: trngsrv: Server response body: %s" % (response_body))
+        print (Storyboard.SEPARATOR2)
 
     #########################################################################
     # POST request to another server (the instantiation server)
@@ -1267,11 +1267,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 # Print usage information
 def usage():
-    print "OVERVIEW: CyTrONE training server that manages the content and instantiation servers.\n"
-    print "USAGE: trngsrv.py [options]\n"
+    print ("OVERVIEW: CyTrONE training server that manages the content and instantiation servers.\n")
+    print ("USAGE: trngsrv.py [options]\n")
 
-    print "OPTIONS:"
-    print "-h, --help         Display help\n"
+    print ("OPTIONS:")
+    print ("-h, --help         Display help\n")
 
 
 # Use threads to handle multiple clients
@@ -1286,15 +1286,15 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 #############################################################################
 def main(argv):
 
-    print Storyboard.SEPARATOR3
-    print "CyTrONE v%s: Integrated cybersecurity training framework" % (CYTRONE_VERSION)
-    print Storyboard.SEPARATOR3
+    print (Storyboard.SEPARATOR3)
+    print ("CyTrONE v%s: Integrated cybersecurity training framework" % (CYTRONE_VERSION))
+    print (Storyboard.SEPARATOR3)
 
     # Parse command line arguments
     try:
         opts, args = getopt.getopt(argv, "h", ["help"])
     except getopt.GetoptError as err:
-        print "* ERROR: trngsrv: Command-line argument error: %s" % (str(err))
+        print ("* ERROR: trngsrv: Command-line argument error: %s" % (str(err)))
         usage()
         sys.exit(1)
     for opt, arg in opts:
@@ -1324,31 +1324,40 @@ def main(argv):
             print("* INFO: trngsrv: HTTPS is enabled => set up SSL socket")
             if os.path.isfile(Storyboard.SSL_keyfile):
                 key = Storyboard.SSL_keyfile
-                print("* INFO: trngsrv: use keyfile => "+key)
+                print("* INFO: trngsrv: Use keyfile: "+key)
             if os.path.isfile(Storyboard.SSL_certfile):
                 crt = Storyboard.SSL_certfile
-                print("* INFO: trngsrv: use certfile => "+crt)
+                print("* INFO: trngsrv: Use certfile: "+crt)
             if Storyboard.SSL_ca_certs is not None:
                 if os.path.isfile(Storyboard.SSL_ca_certs):
                     ca_certs=Storyboard.SSL_ca_certs
             else:
                 ca_certs = None
             try:
-                server.socket = ssl.wrap_socket (server.socket, keyfile=key, certfile=crt, ca_certs=ca_certs, server_side=True)
-            except:
-                print("* INFO: trngsrv: can't use keyfile , certfile , ca_certs => try to use default keyfile , certfile")
+                # Create an SSL context, load the certificates, and disable old TLS versions
+                ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+                ssl_context.load_cert_chain(crt, key)
+                ssl_context.options |= ssl.OP_NO_TLSv1
+                ssl_context.options |= ssl.OP_NO_TLSv1_1
+                # Create socket wrapped in SSL based on context
+                server.socket = ssl_context.wrap_socket (server.socket, server_side=True)
+                # Create socket wrapped in SSL directly (OLD)
+                #server.socket = ssl.wrap_socket (server.socket, keyfile=key, certfile=crt, ca_certs=ca_certs, server_side=True)
+            except Exception as error:
+                print("* ERROR: {}".format(str(error)))
+                print("* WARNING: trngsrv: Can't use keyfile, certfile, ca_certs => try to use default keyfile, certfile")
                 try:
                     server.socket = ssl.wrap_socket (server.socket, keyfile="cytrone.key", certfile="cytrone.crt", ca_certs=None, server_side=True)
-                except:
-                    print("* INFO: trngsrv: can't set up SSL socket => set up SSL disable")
+                except Exception as error:
+                    print("* ERROR: {}".format(str(error)))
+                    print("* WARNING: trngsrv: Can't set up SSL socket => disable SSL setup")
                     Storyboard.ENABLE_HTTPS = False
             finally:
-                print("* INFO: trngsrv: set up for HTTP server done")
-
+                print("* INFO: trngsrv: Setup for HTTP(S) server done")
 
         # Start web server
-        print "* INFO: trngsrv: CyTrONE training server listens on %s:%d%s." % (
-            server_address, server_port, multi_threading)
+        print ("* INFO: trngsrv: CyTrONE training server listens on %s:%d%s." % (
+            server_address, server_port, multi_threading))
         if SERVE_FOREVER:
             server.serve_forever()
         else:
@@ -1356,10 +1365,10 @@ def main(argv):
 
     # Deal with keyboard interrupts
     except KeyboardInterrupt:
-        print '* INFO: trngsrv: Interrupted via ^C => shut down server.'
+        print ("* INFO: trngsrv: Interrupted via ^C => shut down server.")
         server.socket.close()
 
-    print "* INFO: trngsrv: CyTrONE training server ended execution."
+    print ("* INFO: trngsrv: CyTrONE training server ended execution.")
 
 #############################################################################
 # Meta_answer_template

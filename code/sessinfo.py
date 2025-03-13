@@ -157,12 +157,12 @@ class SessionInfo:
         try:
             yaml_file = open(yaml_file_name, "r")
         except IOError:
-            print "* WARNING: sessinfo: Cannot open file '%s' for read." % (yaml_file_name)
+            print ("* WARNING: sessinfo: Cannot open file '%s' for read." % (yaml_file_name))
             return False
         
         try:
             # Load the YAML information
-            info = yaml.load(yaml_file)
+            info = yaml.load(yaml_file, Loader=yaml.SafeLoader)
 
             # Close the file
             yaml_file.close()
@@ -173,8 +173,8 @@ class SessionInfo:
         except yaml.YAMLError as exc:
             if hasattr(exc, 'problem_mark'):
                 mark = exc.problem_mark
-                print "* ERROR: sessinfo: YAML error in file %s at position: (%s:%s)." % (
-                    yaml_file_name, mark.line+1, mark.column+1)
+                print ("* ERROR: sessinfo: YAML error in file %s at position: (%s:%s)." % (
+                    yaml_file_name, mark.line+1, mark.column+1))
 
             return False
         
@@ -189,7 +189,7 @@ class SessionInfo:
             return self.parse_info(data)
 
         except ValueError as error:
-            print "* ERROR: sessinfo: %s." % (error)
+            print ("* ERROR: sessinfo: %s." % (error))
             return False
 
 
@@ -208,11 +208,11 @@ class SessionInfo:
         assert sessions_info!=None
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "* DEBUG: sessinfo: PARSE INFO: %d session(s)" % (
-                len(sessions_info))
-            print sessions_info
-            print SEPARATOR
+            print (SEPARATOR)
+            print ("* DEBUG: sessinfo: PARSE INFO: %d session(s)" % (
+                len(sessions_info)))
+            print (sessions_info)
+            print (SEPARATOR)
 
         # If there are no sessions, we return here
         #if sessions_info == None:
@@ -225,10 +225,10 @@ class SessionInfo:
             self.sessions.append(session)
 
             if DO_DEBUG:
-                print "* DEBUG: sessinfo: SESSION:\n%s" % (session)
+                print ("* DEBUG: sessinfo: SESSION:\n%s" % (session))
 
         if DO_DEBUG:
-            print SEPARATOR
+            print (SEPARATOR)
 
         return True
 
@@ -315,7 +315,7 @@ class SessionInfo:
     # Store session information in a YAML file
     def write_YAML_file(self, yaml_file_name):
 
-        print "* INFO: sessinfo: Writing session info to file '%s'..." % (yaml_file_name)
+        print ("* INFO: sessinfo: Writing session info to file '%s'..." % (yaml_file_name))
 
         info = self.get_JSON_representation_all()
 
@@ -323,18 +323,18 @@ class SessionInfo:
         try:
             yaml_file = open(yaml_file_name, "w")
         except IOError:
-            print "* ERROR: sessinfo: Cannot open file '%s' for write." % (yaml_file_name)
+            print ("* ERROR: sessinfo: Cannot open file '%s' for write." % (yaml_file_name))
             return False
 
         if DO_DEBUG:
-            print SEPARATOR
-            print "* DEBUG: sessinfo: Current session info:"
-            print info
+            print (SEPARATOR)
+            print ("* DEBUG: sessinfo: Current session info:")
+            print (info)
 #            print yaml.dump(info)
 #            print yaml.dump(info, default_flow_style = None)
 #            print yaml.dump(info, default_flow_style = False)
 #            print yaml.dump(info, default_flow_style = True)
-            print SEPARATOR
+            print (SEPARATOR)
 
         yaml_file.write(info)
         
@@ -345,16 +345,16 @@ class SessionInfo:
        
     # Pretty-print info about the scenarios
     def pretty_print(self):
-        print SEPARATOR
-        print "SESSION INFO: %d session(s)" % (len(self.sessions))
-        print SEPARATOR
+        print (SEPARATOR)
+        print ("SESSION INFO: %d session(s)" % (len(self.sessions)))
+        print (SEPARATOR)
         index = 1;
         for session in self.sessions:
-            #print "SESSION %d:" % (index)
-            print "SESSION:"
-            print session.__str__()
+            #print ("SESSION %d:" % (index)
+            print ("SESSION:")
+            print (session.__str__())
             index += 1
-        print SEPARATOR
+        print (SEPARATOR)
 
 
     # Create an external JSON representation that includes only
@@ -415,27 +415,27 @@ if __name__ == '__main__':
         # TEST #1
         if enabled[0]:
             TEST_FILE = "active_sessions.yml"
-            print "\n" + SEPARATO2
-            print "TEST #1: Get session information from YAML file: %s" % (
-                TEST_FILE)
-            print SEPARATO2
+            print ("\n" + SEPARATO2)
+            print ("TEST #1: Get session information from YAML file: %s" % (
+                TEST_FILE))
+            print (SEPARATO2)
             session_info = SessionInfo()
             session_info.parse_YAML_file(TEST_FILE)
             session_info.pretty_print()
             user_id = "john_doe"
-            print "External JSON representation: %s" % (session_info.get_JSON_representation(user_id))
+            print ("External JSON representation: %s" % (session_info.get_JSON_representation(user_id)))
 
         #####################################################################
         # TEST #2
         if enabled[1]:
             TEST_STRING = '[{"sessions": [{"count": "2", "activity_id": "N/A", "name": "Training Session #1", "language": "en", "scenarios": ["Information Security Testing and Assessment"], "levels": ["Level 1 (Easy)"], "user": "john_doe", "time": "Thu Jul 11 10:43:31 2019", "type": "Scenario-Based Training", "id": "1"}]}]'
-            print "\n" + SEPARATO2
-            print "TEST #2: Get session information from JSON string: %s." % (
-                TEST_STRING)
-            print SEPARATO2
+            print ("\n" + SEPARATO2)
+            print ("TEST #2: Get session information from JSON string: %s." % (
+                TEST_STRING))
+            print (SEPARATO2)
             session_info = SessionInfo()
             session_info.parse_JSON_data(TEST_STRING)
             session_info.pretty_print()
     
     except IOError as error:
-        print "* ERROR: sessinfo: %s." % (error)
+        print ("* ERROR: sessinfo: %s." % (error))

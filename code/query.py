@@ -4,7 +4,7 @@
 #############################################################################
 
 # External imports
-import urlparse
+from urllib.parse import urlparse, parse_qs
 import json
 
 # Internal imports
@@ -77,12 +77,12 @@ class Parameters:
         if request_handler:
             # Get the length of the POST message content, and read data
             # from message accordingly
-            length = int(request_handler.headers.getheader('content-length'))
-            parameter_data = request_handler.rfile.read(length)
+            length = int(request_handler.headers.get('content-length'))
+            parameter_data = request_handler.rfile.read(length).decode('utf-8')
 
             # Parse the query string into a dictionary (raise exception if
             # there are parsing errors)
-            self.parameters = urlparse.parse_qs(parameter_data,
+            self.parameters = parse_qs(parameter_data,
                                                 strict_parsing=True)
 
     #########################################################################
@@ -90,7 +90,7 @@ class Parameters:
     def parse_parameters(self, query_string):
         # Parse the query string into a dictionary (raise exception if
         # there are parsing errors)
-        self.parameters = urlparse.parse_qs(query_string, strict_parsing=True)
+        self.parameters = parse_qs(query_string, strict_parsing=True)
 
     #########################################################################
     # Return a string representation of the object
@@ -152,13 +152,13 @@ class Response:
                 status = item.get(Storyboard.SERVER_STATUS_KEY, None)
 
                 # Get activity_id or message
-                if item.has_key(Storyboard.SERVER_ACTIVITY_ID_KEY):
+                if Storyboard.SERVER_ACTIVITY_ID_KEY in item:
                     additional_info = item.get(Storyboard.SERVER_ACTIVITY_ID_KEY)
-                elif item.has_key(Storyboard.SERVER_MESSAGE_KEY):
+                elif Storyboard.SERVER_MESSAGE_KEY in item:
                     additional_info = item.get(Storyboard.SERVER_MESSAGE_KEY)
 
             return (status, additional_info)
 
         except ValueError as error:
-            print "* ERROR: query: %s." % (error)
+            print ("* ERROR: query: %s." % (error))
             return (None, None)
