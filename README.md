@@ -92,7 +92,7 @@ file `scripts/CONFIG.dist` as template
 
 Note that the following software is required to run CyTrONE (some of
 these requirements are shared with CyLMS and CyRIS):
-* Python: Programming language (currently using v2.7)
+* Python: Programming language (currently using v3)
 * PyYAML: Library for handling YAML files
 * PassLib: Library for handling passwords
 

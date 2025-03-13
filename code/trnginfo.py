@@ -20,7 +20,7 @@ DO_DEBUG = False
 # Manage the keys used for representing scenario information
 #############################################################################
 class Keys:
-    
+
     # Values of keys for scenario information representation
     TYPES = "types"
     NAME = "name"
@@ -52,7 +52,7 @@ class TrainingType:
 
         string = "  - " + Keys.NAME + ": " + self.name + "\n    " \
                  + Keys.CATEGORY + ": " + self.category
-        
+
         return string
 
     def get_JSON_representation(self):
@@ -63,7 +63,7 @@ class TrainingType:
 
         return type_repr
 
-    
+
 #############################################################################
 # Manage scenario information
 #############################################################################
@@ -114,7 +114,7 @@ class Level:
 
     # Initialize object based on level information
     def __init__(self, level_info):
-        
+
         self.name = level_info.get(Keys.NAME, None)
         assert self.name!=None
 
@@ -142,7 +142,7 @@ class Level:
 
         return level_repr
 
-    
+
 #############################################################################
 # Manage overall information about training
 #############################################################################
@@ -161,7 +161,7 @@ class TrainingInfo:
         except IOError:
             print ("ERROR: Cannot open file %s." % (yaml_file_name))
             return False
-        
+
         try:
             # Load the YAML information
             info = yaml.load(yaml_file, Loader=yaml.SafeLoader)
@@ -180,7 +180,7 @@ class TrainingInfo:
 
             return False
 
-        
+
     # Parse JSON data and store values into the object fields
     def parse_JSON_data(self, json_data):
 
@@ -205,7 +205,7 @@ class TrainingInfo:
 
         # Initialize the scenario list
         self.scenarios = []
-        
+
         # Get data for all training types from info
         for data in info:
             types_info = data.get(Keys.TYPES, None)
@@ -232,12 +232,11 @@ class TrainingInfo:
         if DO_DEBUG:
             print (SEPARATOR)
 
-        
         # Get data for all scenarios from info
         for data in info:
             scenarios_info = data.get(Keys.SCENARIOS, None)
             if scenarios_info != None:
-                break    
+                break
         assert scenarios_info!=None
 
         if DO_DEBUG:
@@ -260,7 +259,7 @@ class TrainingInfo:
             print (SEPARATOR)
 
         return True
-    
+
 
     # Pretty-print info about the scenarios
     def pretty_print(self):
@@ -311,12 +310,11 @@ class TrainingInfo:
     # scenario and level provided as arguments
     def get_content_file_name(self, scenario_name, level_name):
 
-        
         content_file = None
         #print ("DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
 
         for scenario in self.scenarios:
-            
+
             if scenario.name == scenario_name:
                 for level in scenario.levels:
                     if level.name == level_name:
@@ -328,7 +326,6 @@ class TrainingInfo:
     # scenario and level provided as arguments
     def get_range_file_name(self, scenario_name, level_name):
 
-        
         range_file = None
         #print ("DEBUG: Search for scenario=%s level=%s... (type=%s)" % (scenario_name.__str__(), level_name, type(scenario_name))
 
@@ -349,13 +346,14 @@ class TrainingInfo:
         progression_scenario = None
 
         for scenario in self.scenarios:
-            
+
             if scenario.name == scenario_name:
                 for level in scenario.levels:
                     if level.name == level_name:
                         progression_scenario = level.progression_scenario
 
         return progression_scenario
+
 
 #############################################################################
 # Testing code for the classes in this file
@@ -368,7 +366,7 @@ if __name__ == '__main__':
 
         enabled = [False, True, False]
         DATABASE_DIR = "../database/"
-        
+
         #####################################################################
         # TEST #1
         if enabled[0]:
@@ -406,6 +404,6 @@ if __name__ == '__main__':
             training_info = TrainingInfo()
             training_info.parse_JSON_data(TEST_STRING)
             training_info.pretty_print()
-    
+
     except IOError as error:
         print ("ERROR: %s." % (error))
