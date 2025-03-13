@@ -5,7 +5,6 @@ CyTrONE v1.3
   dropped
 * Verified compatibility with the latest version of CyLMS, which uses
   an upgraded Moodle VM (Ubuntu 24.04.1 LTS OS, Moodle 4.5)
-  which includes upgrades to Moodle 4.5 and Ubuntu 24.04.1 LTS in the Moodle VM
 
 CyTrONE v1.2
 ------------
