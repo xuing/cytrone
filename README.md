@@ -3,12 +3,14 @@
 
 CyTrONE is a cybersecurity training framework that simplifies the
 training setup process through an approach that integrates training
-content and training environment management. CyTrONE is being
-developed by the Cyber Range Organization and Design
-([CROND](https://www.jaist.ac.jp/misc/crond/index-en.html))
-NEC-endowed chair at the Japan Advanced Institute of Science and
-Technology ([JAIST](https://www.jaist.ac.jp/english/)) in Ishikawa,
-Japan.
+content and training environment management. CyTrONE was developed 
+initially by the Cyber Range Organization and Design 
+([CROND](https://www.jaist.ac.jp/misc/crond/index-en.html)) 
+NEC-endowed chair at Japan Advanced Institute of Science and 
+Technology ([JAIST](https://www.jaist.ac.jp/english/)), Ishikawa, 
+Japan, and development currently continues at the 
+[Cybersecurity Research Lab](https://www.jaist.ac.jp/is/labs/beuran-lab/) 
+at JAIST.
 
 An overview of CyTrONE is provided below, illustrating the overall
 workflow, as well as the interaction with several external modules
