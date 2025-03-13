@@ -53,13 +53,13 @@ fi
 
 # Start the internal CyTrONE modules (servers listening for commands)
 echo "* Start training server on      ${TRAINING_HOST} (user ${CYTRONE_USER}, port ${TRAINING_PORT})."
-ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${TRAINING_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_trngsrv python -u ${CODE_DIR}/trngsrv.py'" &
+ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${TRAINING_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_trngsrv python3 -u ${CODE_DIR}/trngsrv.py'" &
 
 echo "* Start instantiation server on ${INSTANTIATION_HOST} (user ${CYTRONE_USER}, port ${INSTANTIATION_PORT})."
-ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${INSTANTIATION_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_instsrv python -u ${CODE_DIR}/instsrv.py --path ${CYRIS_PATH} --cyprom ${CYPROM_PATH}'" &
+ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${INSTANTIATION_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_instsrv python3 -u ${CODE_DIR}/instsrv.py --path ${CYRIS_PATH} --cyprom ${CYPROM_PATH}'" &
 
 echo "* Start content server on       ${CONTENT_HOST} (user ${CYTRONE_USER}, port ${CONTENT_PORT})."
-ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${CONTENT_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_contsrv python -u ${CODE_DIR}/contsrv.py --path ${CYLMS_PATH} --config ${CYLMS_CONFIG}'" &
+ssh ${SSH_OPTIONS} ${CYTRONE_USER}@${CONTENT_HOST} "cd ${CODE_DIR}; bash -c 'exec -a cytrone_contsrv python3 -u ${CODE_DIR}/contsrv.py --path ${CYLMS_PATH} --config ${CYLMS_CONFIG}'" &
 
 sleep 3
 
