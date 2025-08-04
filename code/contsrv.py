@@ -32,7 +32,7 @@ SERVER_ERROR  = 500
 LOCAL_SERVER  = True
 SERVE_FOREVER = True # Use serve count if not using local server?!
 RESPONSE_SUCCESS = '[{"' + Storyboard.SERVER_STATUS_KEY + '": "' + Storyboard.SERVER_STATUS_SUCCESS + '"}]'
-RESPONSE_SUCCESS_ID_PREFIX = '[{"' + Storyboard.SERVER_STATUS_KEY + '": "' + Storyboard.SERVER_STATUS_SUCCESS \
+RESPONSE_SUCCESS_ID_PREFIX = '[{"' + Storyboard.SERVER_STATUS_KEY + '": "' + Storyboard.SERVER_STATUS_SUCCESS 
                              + '", "' + Storyboard.SERVER_ACTIVITY_ID_KEY + '": "'
 RESPONSE_SUCCESS_ID_SUFFIX = '"}]'
 RESPONSE_ERROR = '[{"' + Storyboard.SERVER_STATUS_KEY + '": "' + Storyboard.SERVER_STATUS_ERROR + '"}]'
@@ -298,81 +298,84 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 # Main program
 #############################################################################
 def main(argv):
-
-    global USE_MOODLE
-    global CYLMS_PATH
-    global CYLMS_CONFIG
-
-    # Parse command line arguments
     try:
-        opts, args = getopt.getopt(argv, "hnp:c:", ["help", "no-lms", "path=", "config="])
-    except getopt.GetoptError as err:
-        print ("* ERROR: contsrv: Command-line argument error: %s" % (str(err)))
-        usage()
-        sys.exit(1)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
+        global USE_MOODLE
+        global CYLMS_PATH
+        global CYLMS_CONFIG
+
+        # Parse command line arguments
+        try:
+            opts, args = getopt.getopt(argv, "hnp:c:", ["help", "no-lms", "path=", "config="])
+        except getopt.GetoptError as err:
+            print ("* ERROR: contsrv: Command-line argument error: %s" % (str(err)))
             usage()
-            sys.exit()
-        elif opt in ("-n", "--no-lms"):
-            USE_MOODLE = False;
-        elif opt in ("-p", "--path"):
-            CYLMS_PATH = arg
-        elif opt in ("-c", "--config"):
-            CYLMS_CONFIG = arg
+            sys.exit(1)
+        for opt, arg in opts:
+            if opt in ("-h", "--help"):
+                usage()
+                sys.exit()
+            elif opt in ("-n", "--no-lms"):
+                USE_MOODLE = False;
+            elif opt in ("-p", "--path"):
+                CYLMS_PATH = arg
+            elif opt in ("-c", "--config"):
+                CYLMS_CONFIG = arg
 
-    # Assign default value if necessary
-    if not CYLMS_PATH:
-        CYLMS_PATH = DEFAULT_CYLMS_PATH
-    # Append '/' to path if it does not exist
-    if not CYLMS_PATH.endswith("/"):
-        CYLMS_PATH += "/"
+        # Assign default value if necessary
+        if not CYLMS_PATH:
+            CYLMS_PATH = DEFAULT_CYLMS_PATH
+        # Append '/' to path if it does not exist
+        if not CYLMS_PATH.endswith("/"):
+            CYLMS_PATH += "/"
 
-    # Assign default value if necessary
-    if not CYLMS_CONFIG:
-        CYLMS_CONFIG = DEFAULT_CYLMS_CONFIG
+        # Assign default value if necessary
+        if not CYLMS_CONFIG:
+            CYLMS_CONFIG = DEFAULT_CYLMS_CONFIG
 
-    try:
+        try:
 
-        # Configure the web server
-        if LOCAL_SERVER:
-            server_address = LOCAL_ADDRESS
-        else:
-            server_address=""
-        server_port = SERVER_PORT
+            # Configure the web server
+            if LOCAL_SERVER:
+                server_address = LOCAL_ADDRESS
+            else:
+                server_address=""
+            server_port = SERVER_PORT
 
-        multi_threading = ""
-        if ENABLE_THREADS:
-            server = ThreadedHTTPServer((server_address, server_port),
-                                        RequestHandler)
-            multi_threading = " (multi-threading mode)"
-        else:
-            server = HTTPServer((server_address, server_port), RequestHandler)
+            multi_threading = ""
+            if ENABLE_THREADS:
+                server = ThreadedHTTPServer((server_address, server_port),
+                                            RequestHandler)
+                multi_threading = " (multi-threading mode)"
+            else:
+                server = HTTPServer((server_address, server_port), RequestHandler)
 
-        # Start the web server
-        print ("* INFO: contsrv: CyTrONE content server listens on %s:%d%s." % (
-            server_address, server_port, multi_threading))
-        if not USE_MOODLE:
-            print ("* INFO: contsrv: LMS use is disabled => only simulate actions.")
-        else:
-            print ("* INFO: contsrv: Using CyLMS software installed in %s." % (CYLMS_PATH))
-            print ("* INFO: contsrv: Using CyLMS configuration file %s." % (CYLMS_CONFIG))
+            # Start the web server
+            print ("* INFO: contsrv: CyTrONE content server listens on %s:%d%s." % (
+                server_address, server_port, multi_threading))
+            if not USE_MOODLE:
+                print ("* INFO: contsrv: LMS use is disabled => only simulate actions.")
+            else:
+                print ("* INFO: contsrv: Using CyLMS software installed in %s." % (CYLMS_PATH))
+                print ("* INFO: contsrv: Using CyLMS configuration file %s." % (CYLMS_CONFIG))
 
-        if SERVE_FOREVER:
-            server.serve_forever()
-        else:
-            server.handle_request()
+            if SERVE_FOREVER:
+                server.serve_forever()
+            else:
+                server.handle_request()
 
-    # Catch socket errors
-    except IOError:
-        print ("* ERROR: contsrv: CyTrONE content server: HTTPServer error (server may be running already).")
+        # Catch socket errors
+        except IOError:
+            print ("* ERROR: contsrv: CyTrONE content server: HTTPServer error (server may be running already).")
 
-    # Deal with keyboard interrupts
-    except KeyboardInterrupt:
-        print ("* INFO: contsrv: Interrupted via ^C => shut down server.")
-        server.socket.close()
+        # Deal with keyboard interrupts
+        except KeyboardInterrupt:
+            print ("* INFO: contsrv: Interrupted via ^C => shut down server.")
+            server.socket.close()
 
-    print ("* INFO: contsrv: CyTrONE content server ended execution.")
+        print ("* INFO: contsrv: CyTrONE content server ended execution.")
+    except Exception as e:
+        with open("/tmp/contsrv_CRASH.log", "w") as f:
+            f.write(str(e))
 
 
 #############################################################################

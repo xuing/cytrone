@@ -18,7 +18,7 @@
 ###########################################################
 # Load configuration
 
-: CROND_PREFIX=${CROND_PREFIX:=/home/cyuser}
+: CROND_PREFIX=${CROND_PREFIX:=/home/ubuntu}
 CYTRONE_SCRIPTS_CONFIG=$CROND_PREFIX/cytrone/scripts/CONFIG
 
 if [ -f $CYTRONE_SCRIPTS_CONFIG ]; then
