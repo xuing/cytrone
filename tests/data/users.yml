@@ -1,0 +1,13 @@
+- users:
+    - name: "John Doe"
+      id: "john_doe"
+      password: "$pbkdf2-sha256$29000$N8d.z6I.rA5b.7j/0kI/Lw$y/lO9.M.J0q.Z5a/6bJ/H6" # "password"
+      host_mgmt_addr: "192.168.1.10"
+      host_virbr_addr: "192.168.122.1"
+      host_account: "johndoe"
+    - name: "Jane Smith"
+      id: "jane_smith"
+      password: "$pbkdf2-sha256$29000$A9b.c1D.eF4g.H2i/JkL/M$z.N.P1o.Q2r.S3t/U4v/W5" # "password123"
+      host_mgmt_addr: "192.168.1.11"
+      host_virbr_addr: "192.168.122.1"
+      host_account: "janesmith"

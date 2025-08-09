@@ -1,0 +1,21 @@
+- sessions:
+    - name: "Training Session #1"
+      id: "1"
+      user: "john_doe"
+      time: "Thu Aug 08 08:00:00 2024"
+      type: "Scenario-Based Training"
+      scenarios: ["Test Scenario 1"]
+      levels: ["Level 1"]
+      language: "en"
+      count: "1"
+      activity_id": "101"
+    - name: "Training Session #2"
+      id: "2"
+      user: "jane_smith"
+      time: "Thu Aug 08 09:00:00 2024"
+      type: "Topic-Based Training"
+      scenarios: ["Test Scenario 2"]
+      levels: ["Easy"]
+      language: "en"
+      count: "1"
+      activity_id: "102"

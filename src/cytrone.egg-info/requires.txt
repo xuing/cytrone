@@ -1,0 +1,6 @@
+pyyaml
+passlib
+
+[test]
+pytest
+pytest-mock

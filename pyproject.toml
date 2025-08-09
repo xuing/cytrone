@@ -1,0 +1,14 @@
+[project]
+name = "cytrone"
+version = "2.0.0"
+description = "An integrated cybersecurity training framework."
+dependencies = [
+    "pyyaml",
+    "passlib",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-mock",
+]

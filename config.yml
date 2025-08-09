@@ -1,0 +1,58 @@
+# Central configuration for CyTrONE
+
+general:
+  debug: false
+  emulate_delay: false
+  database_dir: "database/" # Relative to project root
+  enable_https: true
+  enable_password: true
+  password:
+    use_passlib: true
+
+ssl:
+  keyfile: "code/cytrone.key"
+  certfile: "code/cytrone.crt"
+  ca_certs: null
+
+trngsrv:
+  host: "127.0.0.1"
+  port: 8082
+  enable_threads: true
+  max_sessions: 100
+  content_server_url: "http://127.0.0.1:8084"
+  instantiation_server_url: "http://127.0.0.1:8083"
+  files:
+    users: "users.yml"
+    scenarios_en: "training-en.yml"
+    scenarios_ja: "training-ja.yml"
+    saved_configurations: "saved_configurations.yml"
+    active_sessions: "active_sessions.yml"
+
+contsrv:
+  host: "127.0.0.1"
+  port: 8084
+  enable_threads: true
+  use_moodle: true
+  cylms:
+    path: "/home/cyuser/cylms/"
+    config: "/home/cyuser/cytrone/moodle/cylms_config"
+  simulation:
+    duration: -1
+    rand_min: 1
+    rand_max: 3
+
+instsrv:
+  host: "127.0.0.1"
+  port: 8083
+  enable_threads: true
+  use_cyris: true
+  cyris:
+    path: "/home/cyuser/cyris/"
+    range_directory: "cyber_range/"
+    config_filename: "CONFIG"
+  cyprom:
+    path: "/home/cyuser/cyprom/"
+  simulation:
+    duration: -1
+    rand_min: 1
+    rand_max: 3

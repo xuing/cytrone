@@ -6,9 +6,10 @@
 # External imports
 from urllib.parse import urlparse, parse_qs
 import json
+import logging
 
 # Internal imports
-from storyboard import Storyboard
+from .storyboard import Storyboard
 
 
 #############################################################################
@@ -160,5 +161,5 @@ class Response:
             return (status, additional_info)
 
         except ValueError as error:
-            print ("* ERROR: query: %s." % (error))
+            logging.error("Failed to parse server response JSON: %s", error)
             return (None, None)

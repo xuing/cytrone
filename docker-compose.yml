@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  trngsrv:
+    build: .
+    command: python -m src.cytrone.trngsrv
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./database:/app/database
+      - ./config.yml:/app/config.yml
+    networks:
+      - cytrone-net
+
+  contsrv:
+    build: .
+    # Run in simulation mode as CyLMS is not in the container
+    command: python -m src.cytrone.contsrv -n
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./database:/app/database
+      - ./config.yml:/app/config.yml
+    networks:
+      - cytrone-net
+
+  instsrv:
+    build: .
+    # Run in simulation mode as CyRIS is not in the container
+    command: python -m src.cytrone.instsrv -n
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./database:/app/database
+      - ./config.yml:/app/config.yml
+    networks:
+      - cytrone-net
+
+networks:
+  cytrone-net:
+    driver: bridge

@@ -1,0 +1,20 @@
+- types:
+    - name: "Scenario-Based Training"
+      category: "scenario"
+    - name: "Topic-Based Training"
+      category: "topic"
+- scenarios:
+    - name: "Test Scenario 1"
+      levels:
+        - name: "Level 1"
+          content: "content1.yml"
+          range: "range1.yml"
+          progression: "progression1.yml"
+        - name: "Level 2"
+          content: "content2.yml"
+          range: "range2.yml"
+    - name: "Test Scenario 2"
+      levels:
+        - name: "Easy"
+          content: "content_easy.yml"
+          range: "range_easy.yml"
