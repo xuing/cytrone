@@ -54,7 +54,7 @@ try:
 
     # If no http-like prefix exists, add the appropriate one
     if not (server_url.startswith(HTTP_PREFIX) or server_url.startswith(HTTPS_PREFIX)):
-        if Storyboard.ENABLE_HTTPS:
+        if False:
             server_url = HTTPS_PREFIX + server_url
         else:
             server_url = HTTP_PREFIX + server_url

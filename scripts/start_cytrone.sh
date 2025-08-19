@@ -1,22 +1,12 @@
 #!/bin/bash
 
 ###########################################################
-# Start the CyTrONE framework
+# Start the CyTrONE framework (Manual contsrv.py launch)
 ###########################################################
-
-###########################################################
-# Usage information
-
-# $ ./start_cytrone.sh
-
 
 ###########################################################
 # Load configuration
 
-# Prepare logger
-trap 'logger -p daemon.warning receive SIGHUP' HUP
-
-# Read configuration
 : CROND_PREFIX=${CROND_PREFIX:=/home/ubuntu}
 CYTRONE_SCRIPTS_CONFIG=$CROND_PREFIX/cytrone/scripts/CONFIG
 
@@ -34,15 +24,10 @@ exec < /dev/null >> $LOG 2>&1
 ###########################################################
 # Start CyTrONE
 
-echo "# Start CyTrONE server modules sequentially."
+echo "# Starting remaining CyTrONE server modules."
+echo "# IMPORTANT: This script assumes you have started contsrv.py manually in a separate terminal."
 
 # Start the internal CyTrONE modules (servers listening for commands)
-# Start content and instantiation servers first as they are dependencies for the training server.
-
-echo "* Start content server on       ${CONTENT_HOST} (port ${CONTENT_PORT})."
-export PYTHONPATH=${PYTHONPATH}:/home/ubuntu/cytrone/cylms
-cd ${CODE_DIR}; python3 -u ${CODE_DIR}/contsrv.py --path ${CYLMS_PATH} --config ${CYLMS_CONFIG} &
-sleep 2
 
 echo "* Start instantiation server on ${INSTANTIATION_HOST} (port ${INSTANTIATION_PORT})."
 cd ${CODE_DIR}; python3 -u ${CODE_DIR}/instsrv.py --path ${CYRIS_PATH} --cyprom ${CYPROM_PATH} &

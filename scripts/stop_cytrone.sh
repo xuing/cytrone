@@ -25,14 +25,25 @@ echo "# Stop CyTrONE server modules."
 ###########################################################
 # Stop CyTrONE
 
-# Stop the internal server modules
+# Stop the internal server modules by finding the exact process
+# This is safer than a broad pkill
+
 echo "* Stop the training server."
-pkill -f trngsrv.py
+PGREP_TRNG=$(pgrep -f "python3 -u ${CODE_DIR}/trngsrv.py")
+if [ -n "$PGREP_TRNG" ]; then
+    kill $PGREP_TRNG
+fi
 
 echo "* Stop the instantiation server."
-pkill -f instsrv.py
+PGREP_INST=$(pgrep -f "python3 -u ${CODE_DIR}/instsrv.py")
+if [ -n "$PGREP_INST" ]; then
+    kill $PGREP_INST
+fi
 
 echo "* Stop the content server."
-pkill -f contsrv.py
+PGREP_CONT=$(pgrep -f "python3 -u ${CODE_DIR}/contsrv.py")
+if [ -n "$PGREP_CONT" ]; then
+    kill $PGREP_CONT
+fi
 
 exit 0
